@@ -4,6 +4,9 @@ import Dashboard from "../pages/Dashboard";
 import { PrivateRoute } from "./PrivateRoute";
 import Layout from "../components/Layout";
 import Clientes from "../pages/Clientes";
+import Veiculos from "../pages/Veiculos";
+import Registros from "../pages/Registros";
+import Orcamentos from "../pages/Orcamentos";
 
 
 
@@ -23,6 +26,9 @@ export function AppRoutes() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/veiculos" element={<Veiculos />} />
+          <Route path="/registros" element={<Registros />} />
+          <Route path="/orcamentos" element={<Orcamentos />} />
         </Route>
 
       </Routes>
