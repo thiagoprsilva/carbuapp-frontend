@@ -55,10 +55,15 @@ export default function Orcamentos() {
   const [itemPreco, setItemPreco] = useState<number>(0);
 
   // itens do orçamento em edição/criação
-  const [itensDraft, setItensDraft] = useState<Array<{ descricao: string; qtd: number; precoUnit: number }>>([]);
+  const [itensDraft, setItensDraft] = useState<
+    Array<{ descricao: string; qtd: number; precoUnit: number }>
+  >([]);
 
   const subtotalDraft = useMemo(() => {
-    return itensDraft.reduce((acc, it) => acc + (Number(it.qtd) || 0) * (Number(it.precoUnit) || 0), 0);
+    return itensDraft.reduce(
+      (acc, it) => acc + (Number(it.qtd) || 0) * (Number(it.precoUnit) || 0),
+      0
+    );
   }, [itensDraft]);
 
   async function loadVeiculos() {
@@ -110,7 +115,11 @@ export default function Orcamentos() {
 
     setItensDraft((prev) => [
       ...prev,
-      { descricao: itemDescricao.trim(), qtd: Number(itemQtd), precoUnit: Number(itemPreco) },
+      {
+        descricao: itemDescricao.trim(),
+        qtd: Number(itemQtd),
+        precoUnit: Number(itemPreco),
+      },
     ]);
 
     setItemDescricao("");
@@ -198,16 +207,65 @@ export default function Orcamentos() {
       // abre em nova aba (mais prático pra testar)
       window.open(url, "_blank");
 
-      // se quiser forçar download:
-      // const a = document.createElement("a");
-      // a.href = url;
-      // a.download = `orcamento-${numero}.pdf`;
-      // a.click();
-
       // limpa depois de um tempo
       setTimeout(() => window.URL.revokeObjectURL(url), 5000);
     } catch (error: any) {
       alert(error?.response?.data?.message ?? "Erro ao gerar PDF.");
+    }
+  }
+
+  // ✅ integra: gerar registro técnico a partir do orçamento
+  function todayYYYYMMDD() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function buildDescricaoFromOrcamento(o: Orcamento) {
+    const linhas = o.itens.map((it) => {
+      return `- ${it.descricao} (${it.qtd}x R$ ${Number(it.precoUnit).toFixed(
+        2
+      )}) = R$ ${Number(it.valorLinha).toFixed(2)}`;
+    });
+
+    return `Registro gerado do Orçamento #${o.numero}\n` + linhas.join("\n");
+  }
+
+  async function gerarRegistroDoOrcamento(o: Orcamento) {
+    try {
+      const defaultCategoria = "Manutenção";
+      const defaultData = todayYYYYMMDD();
+      const defaultDescricao = buildDescricaoFromOrcamento(o);
+
+      const categoria =
+        prompt("Categoria do Registro Técnico:", defaultCategoria) ?? "";
+      if (!categoria.trim()) return;
+
+      const dataServico =
+        prompt("Data do serviço (YYYY-MM-DD):", defaultData) ?? "";
+      if (!dataServico.trim()) return;
+
+      const descricao =
+        prompt("Descrição (pode ajustar):", defaultDescricao) ?? "";
+      if (!descricao.trim()) return;
+
+      await api.post("/registroTecnico", {
+        veiculoId: o.veiculoId,
+        categoria,
+        descricao,
+        dataServico,
+        observacoes: `Gerado a partir do Orçamento #${o.numero}`,
+        orcamentoId: o.id,
+      });
+
+      alert("Registro técnico gerado e vinculado ao orçamento!");
+    } catch (error: any) {
+      alert(
+        error?.response?.data?.message ??
+          "Erro ao gerar registro técnico a partir do orçamento."
+      );
     }
   }
 
@@ -222,16 +280,40 @@ export default function Orcamentos() {
       <h2 style={{ marginBottom: 14 }}>Orçamentos</h2>
 
       {/* FORM */}
-      <div style={{ background: "#fff", border: "1px solid #eee", padding: 14, borderRadius: 6, marginBottom: 16 }}>
-        <h3 style={{ marginTop: 0 }}>{isEditing ? `Editando Orçamento #${editingId}` : "Novo Orçamento"}</h3>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #eee",
+          padding: 14,
+          borderRadius: 6,
+          marginBottom: 16,
+        }}
+      >
+        <h3 style={{ marginTop: 0 }}>
+          {isEditing ? `Editando Orçamento #${editingId}` : "Novo Orçamento"}
+        </h3>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
           <label style={{ fontWeight: 600 }}>Veículo</label>
 
           <select
             value={veiculoId}
             onChange={(e) => setVeiculoId(Number(e.target.value))}
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", minWidth: 320 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: "#fff",
+              minWidth: 320,
+            }}
           >
             {veiculos.map((v) => (
               <option key={v.id} value={v.id}>
@@ -241,7 +323,14 @@ export default function Orcamentos() {
           </select>
 
           {isEditing && (
-            <button onClick={resetForm} style={{ padding: "10px 14px", borderRadius: 4, border: "1px solid #ddd" }}>
+            <button
+              onClick={resetForm}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 4,
+                border: "1px solid #ddd",
+              }}
+            >
               Cancelar edição
             </button>
           )}
@@ -253,7 +342,13 @@ export default function Orcamentos() {
             placeholder="Descrição do item"
             value={itemDescricao}
             onChange={(e) => setItemDescricao(e.target.value)}
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 360 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: "#fff",
+              width: 360,
+            }}
           />
 
           <input
@@ -261,7 +356,13 @@ export default function Orcamentos() {
             placeholder="Qtd"
             value={itemQtd}
             onChange={(e) => setItemQtd(Number(e.target.value))}
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 100 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: "#fff",
+              width: 100,
+            }}
             min={1}
           />
 
@@ -270,14 +371,26 @@ export default function Orcamentos() {
             placeholder="Preço unit."
             value={itemPreco}
             onChange={(e) => setItemPreco(Number(e.target.value))}
-            style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 140 }}
+            style={{
+              padding: 10,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              background: "#fff",
+              width: 140,
+            }}
             min={0}
             step="0.01"
           />
 
           <button
             onClick={addItem}
-            style={{ padding: "10px 14px", borderRadius: 4, background: "#111827", color: "#fff", border: "none" }}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 4,
+              background: "#111827",
+              color: "#fff",
+              border: "none",
+            }}
           >
             Adicionar item
           </button>
@@ -287,11 +400,21 @@ export default function Orcamentos() {
         <table style={{ width: "100%", border: "1px solid #eee", marginBottom: 10 }}>
           <thead>
             <tr style={{ background: "#f8fafc" }}>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Descrição</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Qtd</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Unit</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Total</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ações</th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
+                Descrição
+              </th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
+                Qtd
+              </th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
+                Unit
+              </th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
+                Total
+              </th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
+                Ações
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -306,14 +429,22 @@ export default function Orcamentos() {
                 <tr key={idx}>
                   <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{it.descricao}</td>
                   <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{it.qtd}</td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>R$ {Number(it.precoUnit).toFixed(2)}</td>
+                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
+                    R$ {Number(it.precoUnit).toFixed(2)}
+                  </td>
                   <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
                     R$ {(Number(it.qtd) * Number(it.precoUnit)).toFixed(2)}
                   </td>
                   <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
                     <button
                       onClick={() => removeItem(idx)}
-                      style={{ padding: "8px 12px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 4 }}
+                      style={{
+                        padding: "8px 12px",
+                        background: "#dc2626",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                      }}
                     >
                       Remover
                     </button>
@@ -330,14 +461,26 @@ export default function Orcamentos() {
           {isEditing ? (
             <button
               onClick={handleUpdate}
-              style={{ padding: "10px 14px", borderRadius: 4, background: "#2563eb", color: "#fff", border: "none" }}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 4,
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+              }}
             >
               Salvar alterações
             </button>
           ) : (
             <button
               onClick={handleCreate}
-              style={{ padding: "10px 14px", borderRadius: 4, background: "#111827", color: "#fff", border: "none" }}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 4,
+                background: "#111827",
+                color: "#fff",
+                border: "none",
+              }}
             >
               Criar orçamento
             </button>
@@ -368,7 +511,9 @@ export default function Orcamentos() {
             orcamentos.map((o) => (
               <tr key={o.id}>
                 <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{o.numero}</td>
-                <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{o.veiculo?.cliente?.nome ?? "-"}</td>
+                <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
+                  {o.veiculo?.cliente?.nome ?? "-"}
+                </td>
                 <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
                   {o.veiculo ? `${o.veiculo.modelo} (${o.veiculo.placa})` : `Veículo #${o.veiculoId}`}
                 </td>
@@ -378,21 +523,52 @@ export default function Orcamentos() {
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button
                       onClick={() => startEdit(o)}
-                      style={{ padding: "8px 12px", background: "#2563eb", color: "#fff", border: "none", borderRadius: 4 }}
+                      style={{
+                        padding: "8px 12px",
+                        background: "#2563eb",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                      }}
                     >
                       Editar
                     </button>
 
                     <button
                       onClick={() => handlePdf(o.id, o.numero)}
-                      style={{ padding: "8px 12px", background: "#111827", color: "#fff", border: "none", borderRadius: 4 }}
+                      style={{
+                        padding: "8px 12px",
+                        background: "#111827",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                      }}
                     >
                       PDF
                     </button>
 
                     <button
+                      onClick={() => gerarRegistroDoOrcamento(o)}
+                      style={{
+                        padding: "8px 12px",
+                        background: "#16a34a",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                      }}
+                    >
+                      Gerar Registro
+                    </button>
+
+                    <button
                       onClick={() => handleDelete(o.id)}
-                      style={{ padding: "8px 12px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 4 }}
+                      style={{
+                        padding: "8px 12px",
+                        background: "#dc2626",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                      }}
                     >
                       Excluir
                     </button>
