@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 type Cliente = {
@@ -49,7 +50,10 @@ export default function Clientes() {
 
     setCreating(true);
     try {
-      await api.post("/clientes", { nome: nome.trim(), telefone: telefone.trim() || undefined });
+      await api.post("/clientes", {
+        nome: nome.trim(),
+        telefone: telefone.trim() || undefined,
+      });
 
       setNome("");
       setTelefone("");
@@ -163,15 +167,9 @@ export default function Clientes() {
         <table style={{ width: "100%", background: "#fff", border: "1px solid #eee" }}>
           <thead>
             <tr style={{ background: "#f8fafc" }}>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
-                Nome
-              </th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
-                Telefone
-              </th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>
-                Ações
-              </th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Nome</th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Telefone</th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ações</th>
             </tr>
           </thead>
 
@@ -203,7 +201,16 @@ export default function Clientes() {
                           }}
                         />
                       ) : (
-                        c.nome
+                        <Link
+                          to={`/clientes/${c.id}`}
+                          style={{
+                            color: "#2563eb",
+                            textDecoration: "none",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {c.nome}
+                        </Link>
                       )}
                     </td>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 type Cliente = {
@@ -174,7 +175,6 @@ export default function Veiculos() {
       await api.delete(`/veiculos/${id}`);
       await loadVeiculos();
     } catch (err: any) {
-      // backend pode retornar: "Não é possível remover..."
       alert(err?.response?.data?.message ?? "Erro ao remover veículo.");
     }
   }
@@ -184,12 +184,21 @@ export default function Veiculos() {
       <h2 style={{ marginBottom: 14 }}>Veículos</h2>
 
       {/* CREATE FORM */}
-      <form onSubmit={handleCreate} style={{ marginBottom: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <form
+        onSubmit={handleCreate}
+        style={{ marginBottom: 18, display: "flex", gap: 10, flexWrap: "wrap" }}
+      >
         <select
           value={clienteId}
           onChange={(e) => setClienteId(Number(e.target.value))}
           disabled={loadingClientes || clientes.length === 0}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", minWidth: 240 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            minWidth: 240,
+          }}
         >
           {clientes.length === 0 ? (
             <option value={0}>Nenhum cliente cadastrado</option>
@@ -206,35 +215,65 @@ export default function Veiculos() {
           placeholder="Placa (ex: ABC1D23)"
           value={placa}
           onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 180 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            width: 180,
+          }}
         />
 
         <input
           placeholder="Modelo (ex: Gol 1988)"
           value={modelo}
           onChange={(e) => setModelo(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 220 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            width: 220,
+          }}
         />
 
         <input
           placeholder="Ano (ex: 1988)"
           value={ano}
           onChange={(e) => setAno(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 120 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            width: 120,
+          }}
         />
 
         <input
           placeholder="Motor (ex: AP 1.9)"
           value={motor}
           onChange={(e) => setMotor(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 180 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            width: 180,
+          }}
         />
 
         <input
           placeholder="Alimentação (ex: Carburado/Turbo/Stage)"
           value={alimentacao}
           onChange={(e) => setAlimentacao(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 240 }}
+          style={{
+            padding: 10,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+            background: "#fff",
+            width: 240,
+          }}
         />
 
         <button
@@ -289,7 +328,13 @@ export default function Veiculos() {
                         <select
                           value={editClienteId}
                           onChange={(e) => setEditClienteId(Number(e.target.value))}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 220 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 220,
+                          }}
                         >
                           {clientes.map((c) => (
                             <option key={c.id} value={c.id}>
@@ -308,7 +353,13 @@ export default function Veiculos() {
                         <input
                           value={editPlaca}
                           onChange={(e) => setEditPlaca(e.target.value.toUpperCase())}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 120 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 120,
+                          }}
                         />
                       ) : (
                         v.placa
@@ -321,10 +372,21 @@ export default function Veiculos() {
                         <input
                           value={editModelo}
                           onChange={(e) => setEditModelo(e.target.value)}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 200 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 200,
+                          }}
                         />
                       ) : (
-                        v.modelo
+                        <Link
+                          to={`/veiculos/${v.id}`}
+                          style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}
+                        >
+                          {v.modelo}
+                        </Link>
                       )}
                     </td>
 
@@ -334,7 +396,13 @@ export default function Veiculos() {
                         <input
                           value={editAno}
                           onChange={(e) => setEditAno(e.target.value)}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 90 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 90,
+                          }}
                         />
                       ) : (
                         v.ano ?? "-"
@@ -347,7 +415,13 @@ export default function Veiculos() {
                         <input
                           value={editMotor}
                           onChange={(e) => setEditMotor(e.target.value)}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 160 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 160,
+                          }}
                         />
                       ) : (
                         v.motor ?? "-"
@@ -360,7 +434,13 @@ export default function Veiculos() {
                         <input
                           value={editAlimentacao}
                           onChange={(e) => setEditAlimentacao(e.target.value)}
-                          style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 160 }}
+                          style={{
+                            padding: 8,
+                            border: "1px solid #ccc",
+                            borderRadius: 4,
+                            background: "#fff",
+                            width: 160,
+                          }}
                         />
                       ) : (
                         v.alimentacao ?? "-"
