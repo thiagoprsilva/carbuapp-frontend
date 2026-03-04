@@ -57,6 +57,7 @@ export default function Dashboard() {
       setSummary(res.data);
     } catch (err: any) {
       alert(err?.response?.data?.message ?? "Erro ao carregar dashboard.");
+      setSummary(null);
     } finally {
       setLoading(false);
     }
@@ -68,105 +69,107 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+      {/* Header */}
+      <div className="row">
         <div>
-          <h2 style={{ marginBottom: 6 }}>Dashboard</h2>
-          <div style={{ opacity: 0.85 }}>
+          <h2 className="h2">Dashboard</h2>
+          <div className="sub">
             Logado como: <b>{user?.nome}</b> ({user?.email}) <br />
             Oficina: <b>{oficina?.nome ?? `ID ${user?.oficinaId}`}</b>
           </div>
         </div>
 
-        <button
-          onClick={logout}
-          style={{
-            padding: "10px 14px",
-            borderRadius: 6,
-            border: "1px solid #ddd",
-            background: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          Sair
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button className="btn btnGray" onClick={loadSummary} type="button" disabled={loading}>
+            {loading ? "Atualizando..." : "Atualizar"}
+          </button>
+
+          <button className="btn btnRed" onClick={logout} type="button">
+            Sair
+          </button>
+        </div>
       </div>
 
+      {/* Conteúdo */}
       {loading ? (
-        <div style={{ marginTop: 16 }}>Carregando...</div>
+        <div className="card" style={{ marginTop: 14 }}>
+          Carregando...
+        </div>
       ) : !summary ? (
-        <div style={{ marginTop: 16 }}>Sem dados.</div>
+        <div className="card" style={{ marginTop: 14 }}>
+          <div className="sub">Sem dados.</div>
+          <div style={{ marginTop: 10 }}>
+            <button className="btn btnPrimary" onClick={loadSummary} type="button">
+              Tentar novamente
+            </button>
+          </div>
+        </div>
       ) : (
         <>
           {/* Cards */}
-          <div
-            style={{
-              marginTop: 16,
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: 12,
-            }}
-          >
-            {[
-              { label: "Clientes", value: summary.totais.clientes, to: "/clientes" },
-              { label: "Veículos", value: summary.totais.veiculos, to: "/veiculos" },
-              { label: "Registros Técnicos", value: summary.totais.registros, to: "/registros" },
-              { label: "Orçamentos", value: summary.totais.orcamentos, to: "/orcamentos" },
-            ].map((c) => (
-              <Link
-                key={c.label}
-                to={c.to}
-                style={{
-                  textDecoration: "none",
-                  color: "#111827",
-                  background: "#fff",
-                  border: "1px solid #eee",
-                  borderRadius: 10,
-                  padding: 14,
-                }}
-              >
-                <div style={{ fontSize: 13, opacity: 0.75 }}>{c.label}</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{c.value}</div>
-              </Link>
-            ))}
+          <div className="grid4" style={{ marginTop: 14 }}>
+            <Link className="card" to="/clientes" style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="sub">Clientes</div>
+              <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.clientes}</div>
+            </Link>
+
+            <Link className="card" to="/veiculos" style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="sub">Veículos</div>
+              <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.veiculos}</div>
+            </Link>
+
+            <Link className="card" to="/registros" style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="sub">Registros Técnicos</div>
+              <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.registros}</div>
+            </Link>
+
+            <Link className="card" to="/orcamentos" style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="sub">Orçamentos</div>
+              <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.orcamentos}</div>
+            </Link>
           </div>
 
           {/* Recentes */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+          <div className="grid2" style={{ marginTop: 14 }}>
             {/* Últimos Registros */}
-            <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 10, padding: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="card">
+              <div className="row">
                 <h3 style={{ margin: 0 }}>Últimos Registros</h3>
-                <Link to="/registros" style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}>
+                <Link to="/registros" className="btn">
                   Ver todos
                 </Link>
               </div>
 
               {summary.recentes.registros.length === 0 ? (
-                <div style={{ marginTop: 10, opacity: 0.7 }}>Nenhum registro.</div>
+                <div className="sub" style={{ marginTop: 10 }}>
+                  Nenhum registro.
+                </div>
               ) : (
-                <table style={{ width: "100%", border: "1px solid #eee", marginTop: 10 }}>
+                <table className="table" style={{ marginTop: 10 }}>
                   <thead>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Data</th>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Veículo</th>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Categoria</th>
+                    <tr>
+                      <th>Data</th>
+                      <th>Veículo</th>
+                      <th>Categoria</th>
+                      <th>Orçamento</th>
                     </tr>
                   </thead>
                   <tbody>
                     {summary.recentes.registros.map((r) => (
                       <tr key={r.id}>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                          {formatPtBr(r.dataServico)}
-                        </td>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
+                        <td>{formatPtBr(r.dataServico)}</td>
+                        <td>
                           <Link
                             to={`/veiculos/${r.veiculo.id}`}
-                            style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}
+                            style={{ fontWeight: 900, textDecoration: "none" }}
                           >
                             {r.veiculo.modelo} ({r.veiculo.placa})
                           </Link>
                         </td>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{r.categoria}</td>
+                        <td>
+                          <span className="badge">{r.categoria}</span>
+                        </td>
+                        <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -175,40 +178,42 @@ export default function Dashboard() {
             </div>
 
             {/* Últimos Orçamentos */}
-            <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 10, padding: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="card">
+              <div className="row">
                 <h3 style={{ margin: 0 }}>Últimos Orçamentos</h3>
-                <Link to="/orcamentos" style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}>
+                <Link to="/orcamentos" className="btn">
                   Ver todos
                 </Link>
               </div>
 
               {summary.recentes.orcamentos.length === 0 ? (
-                <div style={{ marginTop: 10, opacity: 0.7 }}>Nenhum orçamento.</div>
+                <div className="sub" style={{ marginTop: 10 }}>
+                  Nenhum orçamento.
+                </div>
               ) : (
-                <table style={{ width: "100%", border: "1px solid #eee", marginTop: 10 }}>
+                <table className="table" style={{ marginTop: 10 }}>
                   <thead>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Número</th>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Veículo</th>
-                      <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Total</th>
+                    <tr>
+                      <th>Número</th>
+                      <th>Data</th>
+                      <th>Veículo</th>
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {summary.recentes.orcamentos.map((o) => (
                       <tr key={o.id}>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>#{o.numero}</td>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
+                        <td style={{ fontWeight: 900 }}>#{o.numero}</td>
+                        <td>{formatPtBr(o.createdAt)}</td>
+                        <td>
                           <Link
                             to={`/veiculos/${o.veiculo.id}`}
-                            style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}
+                            style={{ fontWeight: 900, textDecoration: "none" }}
                           >
                             {o.veiculo.modelo} ({o.veiculo.placa})
                           </Link>
                         </td>
-                        <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                          R$ {Number(o.total).toFixed(2)}
-                        </td>
+                        <td>R$ {Number(o.total).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -216,20 +221,6 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-
-          <button
-            onClick={loadSummary}
-            style={{
-              marginTop: 14,
-              padding: "10px 14px",
-              borderRadius: 6,
-              border: "1px solid #ddd",
-              background: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            Atualizar
-          </button>
         </>
       )}
     </div>

@@ -1,73 +1,68 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Layout() {
   const { user, oficina, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   function handleLogout() {
     logout();
     navigate("/login");
   }
 
-  return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      
-      {/* SIDEBAR */}
-      <aside
-        style={{
-          width: 240,
-          background: "#111827",
-          color: "#fff",
-          padding: 20,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <h2 style={{ marginBottom: 6 }}>CarbuApp</h2>
-        <p style={{ fontSize: 12, opacity: 0.6, marginBottom: 20 }}>
-          {oficina?.nome}
-        </p>
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    return location.pathname.startsWith(path);
+  };
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <Link to="/">Dashboard</Link>
-          <Link to="/clientes">Clientes</Link>
-          <Link to="/veiculos">Veículos</Link>
-          <Link to="/registros">Registros Técnicos</Link>
-          <Link to="/orcamentos">Orçamentos</Link>
+  return (
+    <div className="app-shell">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <div className="sidebar-title">CarbuApp</div>
+          <div className="sidebar-subtitle">{oficina?.nome ?? "Oficina"}</div>
+        </div>
+
+        <nav className="sidebar-nav">
+          <Link className={`nav-link ${isActive("/") ? "active" : ""}`} to="/">
+            Dashboard
+          </Link>
+
+          <Link className={`nav-link ${isActive("/clientes") ? "active" : ""}`} to="/clientes">
+            Clientes
+          </Link>
+
+          <Link className={`nav-link ${isActive("/veiculos") ? "active" : ""}`} to="/veiculos">
+            Veículos
+          </Link>
+
+          <Link className={`nav-link ${isActive("/registros") ? "active" : ""}`} to="/registros">
+            Registros Técnicos
+          </Link>
+
+          <Link className={`nav-link ${isActive("/orcamentos") ? "active" : ""}`} to="/orcamentos">
+            Orçamentos
+          </Link>
         </nav>
 
-        <div style={{ marginTop: "auto" }}>
-          <hr style={{ margin: "20px 0", opacity: 0.2 }} />
-          <p style={{ fontSize: 12 }}>{user?.nome}</p>
-          <button
-            onClick={handleLogout}
-            style={{
-              marginTop: 10,
-              padding: 8,
-              width: "100%",
-              background: "#1f2937",
-              border: "none",
-              color: "#fff",
-              cursor: "pointer",
-              borderRadius: 4,
-            }}
-          >
-            Sair
-          </button>
+        <div className="sidebar-footer">
+          <div className="divider" />
+
+          <div className="sidebar-user">
+            <div className="sidebar-user-name">{user?.nome ?? "Usuário"}</div>
+            <button className="btn btnRed w-full" onClick={handleLogout}>              Sair
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* CONTEÚDO */}
-      <main
-        style={{
-          flex: 1,
-          padding: 40,
-          background: "#ffffff",
-          overflowY: "auto",
-        }}
-      >
-        <Outlet />
+      <main className="content">
+        <div className="container">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

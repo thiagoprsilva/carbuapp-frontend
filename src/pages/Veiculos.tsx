@@ -95,7 +95,7 @@ export default function Veiculos() {
     try {
       await api.post("/veiculos", {
         clienteId,
-        placa: placa.trim(),
+        placa: placa.trim().toUpperCase(),
         modelo: modelo.trim(),
         ano: ano.trim() || null,
         motor: motor.trim() || null,
@@ -152,7 +152,7 @@ export default function Veiculos() {
     try {
       await api.put(`/veiculos/${id}`, {
         clienteId: editClienteId,
-        placa: editPlaca.trim(),
+        placa: editPlaca.trim().toUpperCase(),
         modelo: editModelo.trim(),
         ano: editAno.trim() || null,
         motor: editMotor.trim() || null,
@@ -181,342 +181,201 @@ export default function Veiculos() {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 14 }}>Veículos</h2>
+      {/* HEADER */}
+      <div className="row" style={{ marginBottom: 12 }}>
+        <div>
+          <h2 className="h2">Veículos</h2>
+          <div className="sub">Cadastre e gerencie os veículos dos clientes.</div>
+        </div>
+        <span className="badge">{veiculos.length} veículo(s)</span>
+      </div>
 
       {/* CREATE FORM */}
-      <form
-        onSubmit={handleCreate}
-        style={{ marginBottom: 18, display: "flex", gap: 10, flexWrap: "wrap" }}
-      >
-        <select
-          value={clienteId}
-          onChange={(e) => setClienteId(Number(e.target.value))}
-          disabled={loadingClientes || clientes.length === 0}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            minWidth: 240,
-          }}
-        >
-          {clientes.length === 0 ? (
-            <option value={0}>Nenhum cliente cadastrado</option>
-          ) : (
-            clientes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))
-          )}
-        </select>
+      <div className="card" style={{ marginBottom: 14 }}>
+        <form onSubmit={handleCreate} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <select
+            className="select"
+            value={clienteId}
+            onChange={(e) => setClienteId(Number(e.target.value))}
+            disabled={loadingClientes || clientes.length === 0}
+            style={{ minWidth: 260 }}
+          >
+            {clientes.length === 0 ? (
+              <option value={0}>Nenhum cliente cadastrado</option>
+            ) : (
+              clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))
+            )}
+          </select>
 
-        <input
-          placeholder="Placa (ex: ABC1D23)"
-          value={placa}
-          onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 180,
-          }}
-        />
+          <input
+            className="input"
+            placeholder="Placa (ex: ABC1D23)"
+            value={placa}
+            onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+            style={{ width: 180 }}
+          />
 
-        <input
-          placeholder="Modelo (ex: Gol 1988)"
-          value={modelo}
-          onChange={(e) => setModelo(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 220,
-          }}
-        />
+          <input
+            className="input"
+            placeholder="Modelo (ex: Gol 1988)"
+            value={modelo}
+            onChange={(e) => setModelo(e.target.value)}
+            style={{ width: 240 }}
+          />
 
-        <input
-          placeholder="Ano (ex: 1988)"
-          value={ano}
-          onChange={(e) => setAno(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 120,
-          }}
-        />
+          <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} style={{ width: 120 }} />
+          <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} style={{ width: 180 }} />
+          <input
+            className="input"
+            placeholder="Alimentação (Carburado/Turbo/Stage)"
+            value={alimentacao}
+            onChange={(e) => setAlimentacao(e.target.value)}
+            style={{ width: 260 }}
+          />
 
-        <input
-          placeholder="Motor (ex: AP 1.9)"
-          value={motor}
-          onChange={(e) => setMotor(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 180,
-          }}
-        />
-
-        <input
-          placeholder="Alimentação (ex: Carburado/Turbo/Stage)"
-          value={alimentacao}
-          onChange={(e) => setAlimentacao(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 240,
-          }}
-        />
-
-        <button
-          type="submit"
-          disabled={creating || clientes.length === 0}
-          style={{
-            padding: "10px 16px",
-            background: "#111827",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          {creating ? "Salvando..." : "Novo Veículo"}
-        </button>
-      </form>
+          <button type="submit" disabled={creating || clientes.length === 0} className="btn btnPrimary">
+            {creating ? "Salvando..." : "Novo Veículo"}
+          </button>
+        </form>
+      </div>
 
       {/* LIST */}
       {loadingList ? (
-        <div>Carregando...</div>
+        <div className="card">Carregando...</div>
       ) : (
-        <table style={{ width: "100%", background: "#fff", border: "1px solid #eee" }}>
-          <thead>
-            <tr style={{ background: "#f8fafc" }}>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Cliente</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Placa</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Modelo</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ano</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Motor</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Alimentação</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ações</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {veiculos.length === 0 ? (
+        <div className="card">
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
-                  Nenhum veículo cadastrado.
-                </td>
+                <th>Cliente</th>
+                <th>Placa</th>
+                <th>Modelo</th>
+                <th>Ano</th>
+                <th>Motor</th>
+                <th>Alimentação</th>
+                <th style={{ width: 260 }}>Ações</th>
               </tr>
-            ) : (
-              veiculos.map((v) => {
-                const isEditing = editId === v.id;
+            </thead>
 
-                return (
-                  <tr key={v.id}>
-                    {/* CLIENTE */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <select
-                          value={editClienteId}
-                          onChange={(e) => setEditClienteId(Number(e.target.value))}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 220,
-                          }}
-                        >
-                          {clientes.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.nome}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        v.cliente?.nome ?? `Cliente #${v.clienteId}`
-                      )}
-                    </td>
+            <tbody>
+              {veiculos.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
+                    Nenhum veículo cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                veiculos.map((v) => {
+                  const isEditing = editId === v.id;
 
-                    {/* PLACA */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editPlaca}
-                          onChange={(e) => setEditPlaca(e.target.value.toUpperCase())}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 120,
-                          }}
-                        />
-                      ) : (
-                        v.placa
-                      )}
-                    </td>
-
-                    {/* MODELO */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editModelo}
-                          onChange={(e) => setEditModelo(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 200,
-                          }}
-                        />
-                      ) : (
-                        <Link
-                          to={`/veiculos/${v.id}`}
-                          style={{ color: "#2563eb", textDecoration: "none", fontWeight: 800 }}
-                        >
-                          {v.modelo}
-                        </Link>
-                      )}
-                    </td>
-
-                    {/* ANO */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editAno}
-                          onChange={(e) => setEditAno(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 90,
-                          }}
-                        />
-                      ) : (
-                        v.ano ?? "-"
-                      )}
-                    </td>
-
-                    {/* MOTOR */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editMotor}
-                          onChange={(e) => setEditMotor(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 160,
-                          }}
-                        />
-                      ) : (
-                        v.motor ?? "-"
-                      )}
-                    </td>
-
-                    {/* ALIMENTAÇÃO */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editAlimentacao}
-                          onChange={(e) => setEditAlimentacao(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            background: "#fff",
-                            width: 160,
-                          }}
-                        />
-                      ) : (
-                        v.alimentacao ?? "-"
-                      )}
-                    </td>
-
-                    {/* AÇÕES */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => saveEdit(v.id)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#111827",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
+                  return (
+                    <tr key={v.id}>
+                      {/* CLIENTE */}
+                      <td>
+                        {isEditing ? (
+                          <select
+                            className="select"
+                            value={editClienteId}
+                            onChange={(e) => setEditClienteId(Number(e.target.value))}
+                            style={{ width: 220 }}
                           >
-                            Salvar
-                          </button>
+                            {clientes.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.nome}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          v.cliente?.nome ?? `Cliente #${v.clienteId}`
+                        )}
+                      </td>
 
-                          <button
-                            onClick={cancelEdit}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#e5e7eb",
-                              color: "#111827",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => startEdit(v)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#2563eb",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Editar
-                          </button>
+                      {/* PLACA */}
+                      <td>
+                        {isEditing ? (
+                          <input
+                            className="input"
+                            value={editPlaca}
+                            onChange={(e) => setEditPlaca(e.target.value.toUpperCase())}
+                            style={{ width: 140 }}
+                          />
+                        ) : (
+                          v.placa
+                        )}
+                      </td>
 
-                          <button
-                            onClick={() => handleDelete(v.id, `${v.modelo} (${v.placa})`)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#dc2626",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      {/* MODELO (com link pro detalhe) */}
+                      <td>
+                        {isEditing ? (
+                          <input
+                            className="input"
+                            value={editModelo}
+                            onChange={(e) => setEditModelo(e.target.value)}
+                            style={{ width: 220 }}
+                          />
+                        ) : (
+                          <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
+                            {v.modelo}
+                          </Link>
+                        )}
+                      </td>
+
+                      <td>{isEditing ? <input className="input" value={editAno} onChange={(e) => setEditAno(e.target.value)} style={{ width: 110 }} /> : v.ano ?? "-"}</td>
+
+                      <td>
+                        {isEditing ? (
+                          <input className="input" value={editMotor} onChange={(e) => setEditMotor(e.target.value)} style={{ width: 160 }} />
+                        ) : (
+                          v.motor ?? "-"
+                        )}
+                      </td>
+
+                      <td>
+                        {isEditing ? (
+                          <input
+                            className="input"
+                            value={editAlimentacao}
+                            onChange={(e) => setEditAlimentacao(e.target.value)}
+                            style={{ width: 180 }}
+                          />
+                        ) : (
+                          v.alimentacao ?? "-"
+                        )}
+                      </td>
+
+                      {/* AÇÕES */}
+                      <td>
+                        {isEditing ? (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => saveEdit(v.id)} className="btn btnPrimary">
+                              Salvar
+                            </button>
+                            <button onClick={cancelEdit} className="btn btnGray">
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => startEdit(v)} className="btn btnBlue">
+                              Editar
+                            </button>
+                            <button onClick={() => handleDelete(v.id, `${v.modelo} (${v.placa})`)} className="btn btnRed">
+                              Excluir
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

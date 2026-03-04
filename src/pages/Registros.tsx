@@ -25,7 +25,6 @@ const categoriasFixas = ["Revisão", "Manutenção", "Personalização", "Projet
 function isoToDateInput(iso: string) {
   if (!iso) return "";
   const d = new Date(iso);
-  // Ajuste simples para evitar "dia anterior" em alguns fusos:
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -120,7 +119,7 @@ export default function Registros() {
     setEditVeiculoId(r.veiculoId);
     setEditCategoria(r.categoria);
     setEditDescricao(r.descricao);
-    setEditDataServico(isoToDateInput(r.dataServico)); // ISO -> date input
+    setEditDataServico(isoToDateInput(r.dataServico));
     setEditObservacoes(r.observacoes ?? "");
   }
 
@@ -167,250 +166,200 @@ export default function Registros() {
     }
   }
 
-  if (loading) return <div>Carregando...</div>;
+  if (loading) return <div className="card">Carregando...</div>;
 
   return (
     <div>
-      <h2 style={{ marginBottom: 14 }}>Histórico Técnico</h2>
+      <div className="row" style={{ marginBottom: 12 }}>
+        <div>
+          <h2 className="h2">Histórico Técnico</h2>
+          <div className="sub">Registre serviços, manutenção e observações por veículo.</div>
+        </div>
+        <span className="badge">{registros.length} registro(s)</span>
+      </div>
 
       {/* CREATE FORM */}
-      <form onSubmit={handleCreate} style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-        <select
-          value={veiculoId}
-          onChange={(e) => setVeiculoId(Number(e.target.value))}
-          disabled={veiculos.length === 0}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", minWidth: 260 }}
-        >
-          {veiculos.length === 0 ? (
-            <option value={0}>Nenhum veículo cadastrado</option>
-          ) : (
-            veiculos.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.modelo} ({v.placa})
+      <div className="card" style={{ marginBottom: 14 }}>
+        <form onSubmit={handleCreate} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <select
+            className="select"
+            value={veiculoId}
+            onChange={(e) => setVeiculoId(Number(e.target.value))}
+            disabled={veiculos.length === 0}
+            style={{ minWidth: 320 }}
+          >
+            {veiculos.length === 0 ? (
+              <option value={0}>Nenhum veículo cadastrado</option>
+            ) : (
+              veiculos.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.modelo} ({v.placa})
+                </option>
+              ))
+            )}
+          </select>
+
+          <select className="select" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ minWidth: 200 }}>
+            {categoriasFixas.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
               </option>
-            ))
-          )}
-        </select>
+            ))}
+          </select>
 
-        <select
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", minWidth: 180 }}
-        >
-          {categoriasFixas.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+          <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} />
 
-        <input
-          type="date"
-          value={dataServico}
-          onChange={(e) => setDataServico(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff" }}
-        />
+          <input
+            className="input"
+            placeholder="Descrição do serviço realizado"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            style={{ width: 360 }}
+          />
 
-        <input
-          placeholder="Descrição do serviço realizado"
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 360 }}
-        />
+          <input
+            className="input"
+            placeholder="Observações (opcional)"
+            value={observacoes}
+            onChange={(e) => setObservacoes(e.target.value)}
+            style={{ width: 280 }}
+          />
 
-        <input
-          placeholder="Observações (opcional)"
-          value={observacoes}
-          onChange={(e) => setObservacoes(e.target.value)}
-          style={{ padding: 10, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 260 }}
-        />
-
-        <button
-          type="submit"
-          disabled={creating || veiculos.length === 0}
-          style={{
-            padding: "10px 16px",
-            background: "#111827",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          {creating ? "Salvando..." : "Registrar"}
-        </button>
-      </form>
+          <button type="submit" disabled={creating || veiculos.length === 0} className={`btn btnPrimary`}>
+            {creating ? "Salvando..." : "Registrar"}
+          </button>
+        </form>
+      </div>
 
       {/* LIST */}
-      <table style={{ width: "100%", background: "#fff", border: "1px solid #eee" }}>
-        <thead>
-          <tr style={{ background: "#f8fafc" }}>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Veículo</th>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Categoria</th>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Descrição</th>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Data</th>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Obs</th>
-            <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ações</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {registros.length === 0 ? (
+      <div className="card">
+        <table className="table">
+          <thead>
             <tr>
-              <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
-                Nenhum registro cadastrado.
-              </td>
+              <th>Veículo</th>
+              <th>Categoria</th>
+              <th>Descrição</th>
+              <th>Data</th>
+              <th>Obs</th>
+              <th style={{ width: 260 }}>Ações</th>
             </tr>
-          ) : (
-            registros.map((r) => {
-              const editing = editId === r.id;
+          </thead>
 
-              return (
-                <tr key={r.id}>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <select
-                        value={editVeiculoId}
-                        onChange={(e) => setEditVeiculoId(Number(e.target.value))}
-                        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", minWidth: 240 }}
-                      >
-                        {veiculos.map((v) => (
-                          <option key={v.id} value={v.id}>
-                            {v.modelo} ({v.placa})
-                          </option>
-                        ))}
-                      </select>
-                    ) : r.veiculo ? (
-                      `${r.veiculo.modelo} (${r.veiculo.placa})`
-                    ) : (
-                      `Veículo #${r.veiculoId}`
-                    )}
-                  </td>
+          <tbody>
+            {registros.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
+                  Nenhum registro cadastrado.
+                </td>
+              </tr>
+            ) : (
+              registros.map((r) => {
+                const editing = editId === r.id;
 
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <select
-                        value={editCategoria}
-                        onChange={(e) => setEditCategoria(e.target.value)}
-                        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff" }}
-                      >
-                        {categoriasFixas.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      r.categoria
-                    )}
-                  </td>
-
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <input
-                        value={editDescricao}
-                        onChange={(e) => setEditDescricao(e.target.value)}
-                        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 360 }}
-                      />
-                    ) : (
-                      r.descricao
-                    )}
-                  </td>
-
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <input
-                        type="date"
-                        value={editDataServico}
-                        onChange={(e) => setEditDataServico(e.target.value)}
-                        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff" }}
-                      />
-                    ) : (
-                      formatPtBr(r.dataServico)
-                    )}
-                  </td>
-
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <input
-                        value={editObservacoes}
-                        onChange={(e) => setEditObservacoes(e.target.value)}
-                        style={{ padding: 8, border: "1px solid #ccc", borderRadius: 4, background: "#fff", width: 240 }}
-                      />
-                    ) : (
-                      r.observacoes ?? "-"
-                    )}
-                  </td>
-
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    {editing ? (
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          onClick={() => saveEdit(r.id)}
-                          style={{
-                            padding: "8px 12px",
-                            background: "#111827",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
+                return (
+                  <tr key={r.id}>
+                    <td>
+                      {editing ? (
+                        <select
+                          className="select"
+                          value={editVeiculoId}
+                          onChange={(e) => setEditVeiculoId(Number(e.target.value))}
+                          style={{ minWidth: 280 }}
                         >
-                          Salvar
-                        </button>
+                          {veiculos.map((v) => (
+                            <option key={v.id} value={v.id}>
+                              {v.modelo} ({v.placa})
+                            </option>
+                          ))}
+                        </select>
+                      ) : r.veiculo ? (
+                        `${r.veiculo.modelo} (${r.veiculo.placa})`
+                      ) : (
+                        `Veículo #${r.veiculoId}`
+                      )}
+                    </td>
 
-                        <button
-                          onClick={cancelEdit}
-                          style={{
-                            padding: "8px 12px",
-                            background: "#e5e7eb",
-                            color: "#111827",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button
-                          onClick={() => startEdit(r)}
-                          style={{
-                            padding: "8px 12px",
-                            background: "#2563eb",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Editar
-                        </button>
+                    <td>
+                      {editing ? (
+                        <select className="select" value={editCategoria} onChange={(e) => setEditCategoria(e.target.value)}>
+                          {categoriasFixas.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        r.categoria
+                      )}
+                    </td>
 
-                        <button
-                          onClick={() => handleDelete(r.id)}
-                          style={{
-                            padding: "8px 12px",
-                            background: "#dc2626",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
+                    <td>
+                      {editing ? (
+                        <input
+                          className="input"
+                          value={editDescricao}
+                          onChange={(e) => setEditDescricao(e.target.value)}
+                          style={{ width: 360 }}
+                        />
+                      ) : (
+                        r.descricao
+                      )}
+                    </td>
+
+                    <td>
+                      {editing ? (
+                        <input
+                          className="input"
+                          type="date"
+                          value={editDataServico}
+                          onChange={(e) => setEditDataServico(e.target.value)}
+                        />
+                      ) : (
+                        formatPtBr(r.dataServico)
+                      )}
+                    </td>
+
+                    <td>
+                      {editing ? (
+                        <input
+                          className="input"
+                          value={editObservacoes}
+                          onChange={(e) => setEditObservacoes(e.target.value)}
+                          style={{ width: 260 }}
+                        />
+                      ) : (
+                        r.observacoes ?? "-"
+                      )}
+                    </td>
+
+                    <td>
+                      {editing ? (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <button onClick={() => saveEdit(r.id)} className="btn btnPrimary" type="button">
+                            Salvar
+                          </button>
+                          <button onClick={cancelEdit} className="btn btnGray" type="button">
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <button onClick={() => startEdit(r)} className="btn btnBlue" type="button">
+                            Editar
+                          </button>
+                          <button onClick={() => handleDelete(r.id)} className="btn btnRed" type="button">
+                            Excluir
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

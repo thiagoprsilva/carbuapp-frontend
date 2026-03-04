@@ -107,202 +107,133 @@ export default function Clientes() {
       await api.delete(`/clientes/${clienteId}`);
       await loadClientes();
     } catch (err: any) {
-      // aqui vai aparecer a mensagem do backend (ex.: tem veículos)
       alert(err?.response?.data?.message ?? "Erro ao remover cliente.");
     }
   }
 
   return (
     <div>
-      <h2 style={{ marginBottom: 14 }}>Clientes</h2>
+      {/* HEADER */}
+      <div className="row" style={{ marginBottom: 12 }}>
+        <div>
+          <h2 className="h2">Clientes</h2>
+          <div className="sub">Cadastre e gerencie seus clientes.</div>
+        </div>
+      </div>
 
       {/* CREATE FORM */}
-      <form onSubmit={handleCreate} style={{ marginBottom: 18, display: "flex", gap: 10 }}>
-        <input
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 260,
-          }}
-        />
+      <div className="card" style={{ marginBottom: 14 }}>
+        <form onSubmit={handleCreate} className="row" style={{ justifyContent: "flex-start", flexWrap: "wrap" }}>
+          <input
+            className="input"
+            placeholder="Nome"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            style={{ width: 280 }}
+          />
 
-        <input
-          placeholder="Telefone"
-          value={telefone}
-          onChange={(e) => setTelefone(e.target.value)}
-          style={{
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 4,
-            background: "#fff",
-            width: 200,
-          }}
-        />
+          <input
+            className="input"
+            placeholder="Telefone"
+            value={telefone}
+            onChange={(e) => setTelefone(e.target.value)}
+            style={{ width: 220 }}
+          />
 
-        <button
-          type="submit"
-          disabled={creating}
-          style={{
-            padding: "10px 16px",
-            background: "#111827",
-            color: "#fff",
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          {creating ? "Salvando..." : "Novo Cliente"}
-        </button>
-      </form>
+          <button type="submit" disabled={creating} className="btn btnPrimary">
+            {creating ? "Salvando..." : "Novo Cliente"}
+          </button>
+        </form>
+      </div>
 
       {/* LIST */}
       {loadingList ? (
-        <div>Carregando...</div>
+        <div className="card">Carregando...</div>
       ) : (
-        <table style={{ width: "100%", background: "#fff", border: "1px solid #eee" }}>
-          <thead>
-            <tr style={{ background: "#f8fafc" }}>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Nome</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Telefone</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ações</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {clientes.length === 0 ? (
+        <div className="card">
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
-                  Nenhum cliente cadastrado.
-                </td>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th style={{ width: 260 }}>Ações</th>
               </tr>
-            ) : (
-              clientes.map((c) => {
-                const isEditing = editId === c.id;
+            </thead>
 
-                return (
-                  <tr key={c.id}>
-                    {/* NOME */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editNome}
-                          onChange={(e) => setEditNome(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            width: "100%",
-                            background: "#fff",
-                          }}
-                        />
-                      ) : (
-                        <Link
-                          to={`/clientes/${c.id}`}
-                          style={{
-                            color: "#2563eb",
-                            textDecoration: "none",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {c.nome}
-                        </Link>
-                      )}
-                    </td>
+            <tbody>
+              {clientes.length === 0 ? (
+                <tr>
+                  <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
+                    Nenhum cliente cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                clientes.map((c) => {
+                  const isEditing = editId === c.id;
 
-                    {/* TELEFONE */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <input
-                          value={editTelefone}
-                          onChange={(e) => setEditTelefone(e.target.value)}
-                          style={{
-                            padding: 8,
-                            border: "1px solid #ccc",
-                            borderRadius: 4,
-                            width: 220,
-                            background: "#fff",
-                          }}
-                        />
-                      ) : (
-                        c.telefone ?? "-"
-                      )}
-                    </td>
+                  return (
+                    <tr key={c.id}>
+                      {/* NOME */}
+                      <td>
+                        {isEditing ? (
+                          <input
+                            className="input"
+                            value={editNome}
+                            onChange={(e) => setEditNome(e.target.value)}
+                            style={{ width: "100%" }}
+                          />
+                        ) : (
+                          <Link to={`/clientes/${c.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
+                            {c.nome}
+                          </Link>
+                        )}
+                      </td>
 
-                    {/* AÇÕES */}
-                    <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                      {isEditing ? (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => saveEdit(c.id)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#111827",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Salvar
-                          </button>
+                      {/* TELEFONE */}
+                      <td>
+                        {isEditing ? (
+                          <input
+                            className="input"
+                            value={editTelefone}
+                            onChange={(e) => setEditTelefone(e.target.value)}
+                            style={{ width: 220 }}
+                          />
+                        ) : (
+                          c.telefone ?? "-"
+                        )}
+                      </td>
 
-                          <button
-                            onClick={cancelEdit}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#e5e7eb",
-                              color: "#111827",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Cancelar
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <button
-                            onClick={() => startEdit(c)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#2563eb",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Editar
-                          </button>
+                      {/* AÇÕES */}
+                      <td>
+                        {isEditing ? (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => saveEdit(c.id)} className="btn btnPrimary">
+                              Salvar
+                            </button>
 
-                          <button
-                            onClick={() => handleDelete(c.id, c.nome)}
-                            style={{
-                              padding: "8px 12px",
-                              background: "#dc2626",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                            <button onClick={cancelEdit} className="btn btnGray">
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => startEdit(c)} className="btn btnBlue">
+                              Editar
+                            </button>
+
+                            <button onClick={() => handleDelete(c.id, c.nome)} className="btn btnRed">
+                              Excluir
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

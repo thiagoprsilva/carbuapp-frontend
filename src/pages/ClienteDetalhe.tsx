@@ -28,7 +28,7 @@ export default function ClienteDetalhe() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ====== UI: Criar veículo inline ======
+  // UI: Criar veículo inline
   const [showCreateVeiculo, setShowCreateVeiculo] = useState(false);
   const [creatingVeiculo, setCreatingVeiculo] = useState(false);
 
@@ -49,8 +49,6 @@ export default function ClienteDetalhe() {
   async function load() {
     setLoading(true);
     try {
-      // GET /clientes/:id
-      // GET /veiculos?clienteId=...
       const [cRes, vRes] = await Promise.all([
         api.get<Cliente>(`/clientes/${clienteId}`),
         api.get<Veiculo[]>(`/veiculos`, { params: { clienteId } }),
@@ -81,7 +79,6 @@ export default function ClienteDetalhe() {
 
     setCreatingVeiculo(true);
     try {
-      // POST /veiculos
       await api.post("/veiculos", {
         clienteId,
         placa: placa.trim().toUpperCase(),
@@ -91,11 +88,8 @@ export default function ClienteDetalhe() {
         alimentacao: alimentacao.trim() || null,
       });
 
-      // Fecha e limpa o form
       resetVeiculoForm();
       setShowCreateVeiculo(false);
-
-      // Recarrega listagem do cliente
       await load();
     } catch (error: any) {
       alert(error?.response?.data?.message ?? "Erro ao criar veículo.");
@@ -104,52 +98,25 @@ export default function ClienteDetalhe() {
     }
   }
 
-  if (loading) return <div>Carregando...</div>;
-  if (!cliente) return <div>Cliente não encontrado.</div>;
+  if (loading) return <div className="card">Carregando...</div>;
+  if (!cliente) return <div className="card">Cliente não encontrado.</div>;
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 10,
-          alignItems: "center",
-        }}
-      >
+      {/* HEADER */}
+      <div className="row" style={{ marginBottom: 14 }}>
         <div>
-          <h2 style={{ marginBottom: 4 }}>Detalhe do Cliente</h2>
-          <div style={{ fontSize: 18, fontWeight: 900 }}>{cliente.nome}</div>
-          <div style={{ opacity: 0.8 }}>Telefone: {cliente.telefone ?? "-"}</div>
+          <h2 className="h2">Detalhe do Cliente</h2>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>{cliente.nome}</div>
+          <div className="sub">Telefone: {cliente.telefone ?? "-"}</div>
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={() => setShowCreateVeiculo((v) => !v)}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 6,
-              border: "1px solid #111827",
-              textDecoration: "none",
-              color: "#fff",
-              background: "#111827",
-              cursor: "pointer",
-            }}
-          >
+          <button className="btn btnPrimary" onClick={() => setShowCreateVeiculo((v) => !v)}>
             {showCreateVeiculo ? "Fechar" : "Novo Veículo"}
           </button>
 
-          <Link
-            to="/clientes"
-            style={{
-              padding: "10px 14px",
-              borderRadius: 6,
-              border: "1px solid #ddd",
-              textDecoration: "none",
-              color: "#111827",
-              background: "#fff",
-            }}
-          >
+          <Link to="/clientes" className="btn">
             Voltar
           </Link>
         </div>
@@ -157,95 +124,42 @@ export default function ClienteDetalhe() {
 
       {/* FORM INLINE: NOVO VEÍCULO */}
       {showCreateVeiculo && (
-        <div
-          style={{
-            marginTop: 16,
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: 8,
-            padding: 14,
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: 10 }}>Cadastrar novo veículo</h3>
+        <div className="card" style={{ marginBottom: 14 }}>
+          <div className="row" style={{ marginBottom: 10, justifyContent: "flex-start" }}>
+            <h3 style={{ margin: 0 }}>Cadastrar novo veículo</h3>
+            <span className="badge">Cliente #{clienteId}</span>
+          </div>
 
           <form onSubmit={handleCreateVeiculo} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <input
+              className="input"
               placeholder="Placa (ex: ABC1D23)"
               value={placa}
               onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                background: "#fff",
-                width: 180,
-              }}
+              style={{ width: 180 }}
             />
 
             <input
+              className="input"
               placeholder="Modelo (ex: Gol 1988)"
               value={modelo}
               onChange={(e) => setModelo(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                background: "#fff",
-                width: 220,
-              }}
+              style={{ width: 240 }}
             />
 
-            <input
-              placeholder="Ano (ex: 1988)"
-              value={ano}
-              onChange={(e) => setAno(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                background: "#fff",
-                width: 120,
-              }}
-            />
+            <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} style={{ width: 120 }} />
+
+            <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} style={{ width: 180 }} />
 
             <input
-              placeholder="Motor (ex: AP 1.9)"
-              value={motor}
-              onChange={(e) => setMotor(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                background: "#fff",
-                width: 180,
-              }}
-            />
-
-            <input
-              placeholder="Alimentação (ex: Carburado/Turbo/Stage)"
+              className="input"
+              placeholder="Alimentação (Carburado/Turbo/Stage)"
               value={alimentacao}
               onChange={(e) => setAlimentacao(e.target.value)}
-              style={{
-                padding: 10,
-                border: "1px solid #ccc",
-                borderRadius: 4,
-                background: "#fff",
-                width: 240,
-              }}
+              style={{ width: 260 }}
             />
 
-            <button
-              type="submit"
-              disabled={creatingVeiculo}
-              style={{
-                padding: "10px 16px",
-                background: "#2563eb",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
-            >
+            <button type="submit" disabled={creatingVeiculo} className="btn btnBlue">
               {creatingVeiculo ? "Salvando..." : "Salvar Veículo"}
             </button>
           </form>
@@ -253,47 +167,35 @@ export default function ClienteDetalhe() {
       )}
 
       {/* LISTA DE VEÍCULOS */}
-      <div
-        style={{
-          marginTop: 16,
-          background: "#fff",
-          border: "1px solid #eee",
-          borderRadius: 8,
-          padding: 14,
-        }}
-      >
-        <h3 style={{ marginTop: 0 }}>Veículos do cliente</h3>
+      <div className="card">
+        <div className="row" style={{ marginBottom: 10 }}>
+          <h3 style={{ margin: 0 }}>Veículos do cliente</h3>
+          <span className="badge">{veiculos.length} veículo(s)</span>
+        </div>
 
         {veiculos.length === 0 ? (
-          <div style={{ opacity: 0.7 }}>Nenhum veículo cadastrado.</div>
+          <div className="sub">Nenhum veículo cadastrado.</div>
         ) : (
-          <table style={{ width: "100%", border: "1px solid #eee" }}>
+          <table className="table">
             <thead>
-              <tr style={{ background: "#f8fafc" }}>
-                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Veículo</th>
-                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Ano</th>
-                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Motor</th>
-                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #eee" }}>Alimentação</th>
+              <tr>
+                <th>Veículo</th>
+                <th>Ano</th>
+                <th>Motor</th>
+                <th>Alimentação</th>
               </tr>
             </thead>
             <tbody>
               {veiculos.map((v) => (
                 <tr key={v.id}>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>
-                    <Link
-                      to={`/veiculos/${v.id}`}
-                      style={{
-                        color: "#2563eb",
-                        textDecoration: "none",
-                        fontWeight: 800,
-                      }}
-                    >
+                  <td>
+                    <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
                       {v.modelo} ({v.placa})
                     </Link>
                   </td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{v.ano ?? "-"}</td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{v.motor ?? "-"}</td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{v.alimentacao ?? "-"}</td>
+                  <td>{v.ano ?? "-"}</td>
+                  <td>{v.motor ?? "-"}</td>
+                  <td>{v.alimentacao ?? "-"}</td>
                 </tr>
               ))}
             </tbody>
