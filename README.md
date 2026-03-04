@@ -1,73 +1,254 @@
-# React + TypeScript + Vite
+# CarbuApp – Frontend  
+### Sistema de Gestão para Oficinas Automotivas  
+**Projeto Integrador – UNASP 2026/1**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+# Sobre o Projeto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+O **CarbuApp** é um sistema web para gestão de oficinas automotivas de pequeno porte.
 
-## React Compiler
+O frontend é responsável pela interface visual do sistema, permitindo que mecânicos e gestores da oficina possam:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Gerenciar clientes
+- Controlar veículos
+- Registrar histórico técnico
+- Criar orçamentos
+- Gerar PDFs de orçamento
+- Consultar dados da oficina
 
-## Expanding the ESLint configuration
+O sistema foi pensado para oficinas que ainda trabalham com papel ou planilhas simples.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Cliente de referência:  
+**Commenale Motorsports**  
+**Apocalypse Custom**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Tecnologias Utilizadas
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **React**
+- **TypeScript**
+- **Vite**
+- **React Router**
+- **Axios**
+- **CSS Custom (Global Styles)**
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+# Arquitetura do Frontend
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+O frontend consome a API do backend via **HTTP REST**.
+
+Backend utilizado:
+# CarbuApp – Frontend  
+### Sistema de Gestão para Oficinas Automotivas  
+**Projeto Integrador – UNASP 2026/1**
+
+---
+
+# Sobre o Projeto
+
+O **CarbuApp** é um sistema web para gestão de oficinas automotivas de pequeno porte.
+
+O frontend é responsável pela interface visual do sistema, permitindo que mecânicos e gestores da oficina possam:
+
+- Gerenciar clientes
+- Controlar veículos
+- Registrar histórico técnico
+- Criar orçamentos
+- Gerar PDFs de orçamento
+- Consultar dados da oficina
+
+O sistema foi pensado para oficinas que ainda trabalham com papel ou planilhas simples.
+
+Cliente de referência:  
+**Commenale Motorsports**  
+**Apocalypse Custom**
+
+---
+
+# Tecnologias Utilizadas
+
+- **React**
+- **TypeScript**
+- **Vite**
+- **React Router**
+- **Axios**
+- **CSS Custom (Global Styles)**
+
+---
+
+# Arquitetura do Frontend
+
+O frontend consome a API do backend via **HTTP REST**.
+
+Backend utilizado:
+Node.js + Express + Prisma
+
+
+A comunicação é feita via **Axios**, com autenticação usando **JWT**.
+
+---
+
+# Funcionalidades da Interface
+
+## Autenticação
+
+- Login com token JWT
+- Armazenamento do token no navegador
+- Proteção de rotas privadas
+- Logout
+
+---
+
+## Dashboard
+
+Exibe um resumo da oficina:
+
+- Total de clientes
+- Total de veículos
+- Total de registros técnicos
+- Total de orçamentos
+
+Também apresenta:
+
+- Últimos registros técnicos
+- Últimos orçamentos
+
+---
+
+## Clientes
+
+CRUD completo:
+
+- Criar cliente
+- Listar clientes
+- Editar cliente
+- Remover cliente
+
+Tela de **Detalhe do Cliente** exibe:
+
+- Informações do cliente
+- Veículos vinculados
+
+---
+
+## Veículos
+
+CRUD completo:
+
+- Criar veículo
+- Listar veículos
+- Editar veículo
+- Remover veículo
+
+Tela de **Detalhe do Veículo** exibe:
+
+- Dados do veículo
+- Histórico técnico
+- Orçamentos relacionados
+
+---
+
+## Registros Técnicos
+
+Permite registrar histórico de manutenção do veículo.
+
+Campos:
+
+- Categoria
+- Descrição
+- Data do serviço
+- Observações
+
+Pode ser gerado manualmente ou a partir de um orçamento.
+
+---
+
+## Orçamentos
+
+Permite criar orçamentos com múltiplos itens.
+
+Funcionalidades:
+
+- Adicionar itens
+- Calcular subtotal automaticamente
+- Editar orçamento
+- Excluir orçamento
+- Gerar PDF
+- Gerar registro técnico a partir do orçamento
+
+---
+
+# Estrutura do Projeto
+src/
+components/
+contexts/
+pages/
+Dashboard.tsx
+Clientes.tsx
+ClienteDetalhe.tsx
+Veiculos.tsx
+VeiculoDetalhe.tsx
+Registros.tsx
+Orcamentos.tsx
+services/
+api.ts
+layouts/
+Layout.tsx
+styles/
+global.css
+
+
+---
+
+# Como Rodar o Frontend
+
+## 1 - Instalar dependências
+npm install
+## 2 - Rodar aplicação
+npm run dev
+## 3 - Abrir no navegador
+http://localhost:5173
+
+
+---
+
+# Integração com Backend
+
+O frontend depende da API do backend.
+
+Certifique-se que o backend esteja rodando:
+http://localhost:3333
+
+Repositório do backend:
+https://github.com/thiagoprsilva/carbuapp-backend
+
+
+---
+
+# Status Atual do Frontend
+
+✔ Login funcional  
+✔ Dashboard integrado  
+✔ CRUD completo de clientes  
+✔ CRUD completo de veículos  
+✔ Histórico técnico funcional  
+✔ Sistema de orçamentos com itens  
+✔ Geração de PDF  
+✔ Layout com sidebar  
+
+Frontend considerado **MVP funcional completo**.
+
+---
+
+# Informações Acadêmicas
+
+**Aluno:** Thiago Pereira Silva  
+**RA:** 060242  
+**Turma:** GTADSI53B  
+**Curso:** Análise e Desenvolvimento de Sistemas  
+**Instituição:** UNASP 
+
+Projeto Integrador – 2026/1
