@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import GlobalSearch from "./GlobalSearch";
 
 export default function Layout() {
   const { user, oficina, logout } = useAuth();
@@ -52,7 +53,8 @@ export default function Layout() {
 
           <div className="sidebar-user">
             <div className="sidebar-user-name">{user?.nome ?? "Usuário"}</div>
-            <button className="btn btnRed w-full" onClick={handleLogout}>              Sair
+            <button className="btn btnRed w-full" onClick={handleLogout}>
+              Sair
             </button>
           </div>
         </div>
@@ -61,6 +63,18 @@ export default function Layout() {
       {/* CONTEÚDO */}
       <main className="content">
         <div className="container">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 16,
+            }}
+          >
+            <GlobalSearch />
+          </div>
+
           <Outlet />
         </div>
       </main>
