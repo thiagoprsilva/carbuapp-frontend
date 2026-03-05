@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { api } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -39,8 +40,17 @@ export default function Login() {
     try {
       await login(email, senha, oficinaId);
       navigate("/", { replace: true });
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Falha no login.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          (err.response?.data as { message?: string } | undefined)?.message ??
+          "Falha no login.";
+        setError(message);
+      } else if (err instanceof Error) {
+        setError(err.message || "Falha no login.");
+      } else {
+        setError("Falha no login.");
+      }
     } finally {
       setLoading(false);
     }

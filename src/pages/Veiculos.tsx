@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
@@ -24,6 +25,8 @@ type Veiculo = {
     telefone?: string | null;
   };
 };
+
+const ALIMENTACAO_OPCOES = ["Gasolina", "Flex", "Etanol", "Diesel"] as const;
 
 export default function Veiculos() {
   // dropdown de clientes
@@ -110,8 +113,17 @@ export default function Veiculos() {
       setAlimentacao("");
 
       await loadVeiculos();
-    } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao criar veículo.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          (err.response?.data as { message?: string } | undefined)?.message ??
+          "Erro ao criar veículo.";
+        alert(message);
+      } else if (err instanceof Error) {
+        alert(err.message || "Erro ao criar veículo.");
+      } else {
+        alert("Erro ao criar veículo.");
+      }
     } finally {
       setCreating(false);
     }
@@ -161,8 +173,17 @@ export default function Veiculos() {
 
       cancelEdit();
       await loadVeiculos();
-    } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao atualizar veículo.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          (err.response?.data as { message?: string } | undefined)?.message ??
+          "Erro ao atualizar veículo.";
+        alert(message);
+      } else if (err instanceof Error) {
+        alert(err.message || "Erro ao atualizar veículo.");
+      } else {
+        alert("Erro ao atualizar veículo.");
+      }
     }
   }
 
@@ -174,8 +195,17 @@ export default function Veiculos() {
     try {
       await api.delete(`/veiculos/${id}`);
       await loadVeiculos();
-    } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao remover veículo.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          (err.response?.data as { message?: string } | undefined)?.message ??
+          "Erro ao remover veículo.";
+        alert(message);
+      } else if (err instanceof Error) {
+        alert(err.message || "Erro ao remover veículo.");
+      } else {
+        alert("Erro ao remover veículo.");
+      }
     }
   }
 
@@ -229,13 +259,19 @@ export default function Veiculos() {
 
           <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} style={{ width: 120 }} />
           <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} style={{ width: 180 }} />
-          <input
-            className="input"
-            placeholder="Alimentação (Carburado/Turbo/Stage)"
+          <select
+            className="select"
             value={alimentacao}
             onChange={(e) => setAlimentacao(e.target.value)}
             style={{ width: 260 }}
-          />
+          >
+            <option value="">Selecione a alimentação</option>
+            {ALIMENTACAO_OPCOES.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
 
           <button type="submit" disabled={creating || clientes.length === 0} className="btn btnPrimary">
             {creating ? "Salvando..." : "Novo Veículo"}
@@ -336,12 +372,19 @@ export default function Veiculos() {
 
                       <td>
                         {isEditing ? (
-                          <input
-                            className="input"
+                          <select
+                            className="select"
                             value={editAlimentacao}
                             onChange={(e) => setEditAlimentacao(e.target.value)}
                             style={{ width: 180 }}
-                          />
+                          >
+                            <option value="">Selecione a alimentação</option>
+                            {ALIMENTACAO_OPCOES.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
                         ) : (
                           v.alimentacao ?? "-"
                         )}
