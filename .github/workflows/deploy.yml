@@ -22,7 +22,9 @@ jobs:
 
             cd /opt/carbuapp-frontend
 
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
 
             npm install
 
