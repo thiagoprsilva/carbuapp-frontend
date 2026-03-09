@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
 import axios from "axios";
 import { api } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +8,11 @@ type Oficina = {
   id: number;
   nome: string;
   responsavel: string;
+};
+
+type CredencialExemplo = {
+  email: string;
+  senha: string;
 };
 
 export default function Login() {
@@ -32,6 +37,22 @@ export default function Login() {
       })
       .catch(() => setError("Não foi possível carregar as oficinas."));
   }, []);
+
+  const credenciaisPorOficina: Record<number, CredencialExemplo> = {
+    1: {
+      email: "admin@commenale.local",
+      senha: "admin123",
+    },
+    2: {
+      email: "admin@apocalypse.local",
+      senha: "admin123",
+    },
+  };
+
+  const credencialAtual = credenciaisPorOficina[oficinaId] ?? {
+    email: "Digite seu e-mail",
+    senha: "Digite sua senha",
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,14 +81,23 @@ export default function Login() {
   return (
     // Teste logo
     <div style={{ maxWidth: 420, margin: "60px auto", padding: 20 }}>
+      <div className="text-center mb-6">
+        <img
+          src="/carbuapplogo.png"
+          alt="CarbuApp"
+          style={{
+            width: "120px",
+            height: "auto",
+            display: "block",
+            margin: "0 auto 8px",
+          }}
+        />
 
-
-
-      <div className="flex justify-center mb-6">
-        <img src="/carbuapplogo.png" alt="CarbuApp" className="h-16" />
+        <p className="text-gray-500 text-sm">
+          Sistema para Oficinas Automotivas
+        </p>
       </div>
 
-      <h1 style={{ marginBottom: 6 }}>CarbuApp</h1>
       <p style={{ marginTop: 0, opacity: 0.8 }}>
         Escolha a oficina e faça login
       </p>
@@ -93,7 +123,7 @@ export default function Login() {
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@commenale.local"
+            placeholder={credencialAtual.email}
             style={{ width: "100%", padding: 10, marginTop: 6 }}
           />
         </label>
@@ -104,7 +134,7 @@ export default function Login() {
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            placeholder="admin123"
+            placeholder={credencialAtual.senha}
             style={{ width: "100%", padding: 10, marginTop: 6 }}
           />
         </label>
