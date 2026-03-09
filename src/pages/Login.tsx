@@ -24,7 +24,8 @@ export default function Login() {
 
   // Busca oficinas públicas para montar dropdown
   useEffect(() => {
-    api.get<Oficina[]>("/public/oficinas")
+    api
+      .get<Oficina[]>("/public/oficinas")
       .then((res) => {
         setOficinas(res.data);
         if (res.data.length > 0) setOficinaId(res.data[0].id);
@@ -57,9 +58,19 @@ export default function Login() {
   }
 
   return (
+    // Teste logo
     <div style={{ maxWidth: 420, margin: "60px auto", padding: 20 }}>
+
+
+
+      <div className="flex justify-center mb-6">
+        <img src="/carbuapplogo.png" alt="CarbuApp" className="h-16" />
+      </div>
+
       <h1 style={{ marginBottom: 6 }}>CarbuApp</h1>
-      <p style={{ marginTop: 0, opacity: 0.8 }}>Escolha a oficina e faça login</p>
+      <p style={{ marginTop: 0, opacity: 0.8 }}>
+        Escolha a oficina e faça login
+      </p>
 
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
         <label>
