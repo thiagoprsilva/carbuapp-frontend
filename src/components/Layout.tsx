@@ -1,11 +1,13 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import GlobalSearch from "./GlobalSearch";
+import { useState } from "react";
 
 export default function Layout() {
   const { user, oficina, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   function handleLogout() {
     logout();
@@ -17,33 +19,83 @@ export default function Layout() {
     return location.pathname.startsWith(path);
   };
 
+  function handleMobileNavigate() {
+    setSidebarOpen(false);
+  }
+
   return (
     <div className="app-shell">
+      {/* BOTÃO MOBILE */}
+      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+        ☰
+      </button>
+
+      {/* OVERLAY MOBILE */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* SIDEBAR */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-header">
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setSidebarOpen(false)}
+          >
+            ✕
+          </button>
+
+          <img
+            src="/carbuapplogo.png"
+            alt="Logo do escritório"
+            className="sidebar-logo"
+          />
+
           <div className="sidebar-title">CarbuApp</div>
           <div className="sidebar-subtitle">{oficina?.nome ?? "Oficina"}</div>
         </div>
 
         <nav className="sidebar-nav">
-          <Link className={`nav-link ${isActive("/") ? "active" : ""}`} to="/">
+          <Link
+            className={`nav-link ${isActive("/") ? "active" : ""}`}
+            to="/"
+            onClick={handleMobileNavigate}
+          >
             Dashboard
           </Link>
 
-          <Link className={`nav-link ${isActive("/clientes") ? "active" : ""}`} to="/clientes">
+          <Link
+            className={`nav-link ${isActive("/clientes") ? "active" : ""}`}
+            to="/clientes"
+            onClick={handleMobileNavigate}
+          >
             Clientes
           </Link>
 
-          <Link className={`nav-link ${isActive("/veiculos") ? "active" : ""}`} to="/veiculos">
+          <Link
+            className={`nav-link ${isActive("/veiculos") ? "active" : ""}`}
+            to="/veiculos"
+            onClick={handleMobileNavigate}
+          >
             Veículos
           </Link>
 
-          <Link className={`nav-link ${isActive("/registros") ? "active" : ""}`} to="/registros">
+          <Link
+            className={`nav-link ${isActive("/registros") ? "active" : ""}`}
+            to="/registros"
+            onClick={handleMobileNavigate}
+          >
             Registros Técnicos
           </Link>
 
-          <Link className={`nav-link ${isActive("/orcamentos") ? "active" : ""}`} to="/orcamentos">
+          <Link
+            className={`nav-link ${isActive("/orcamentos") ? "active" : ""}`}
+            to="/orcamentos"
+            onClick={handleMobileNavigate}
+          >
             Orçamentos
           </Link>
         </nav>
@@ -63,15 +115,7 @@ export default function Layout() {
       {/* CONTEÚDO */}
       <main className="content">
         <div className="container">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 16,
-            }}
-          >
+          <div className="content-topbar">
             <GlobalSearch />
           </div>
 
