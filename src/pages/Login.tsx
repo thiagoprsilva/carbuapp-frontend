@@ -134,7 +134,6 @@ export default function Login() {
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            placeholder={credencialAtual.senha}
             style={{ width: "100%", padding: 10, marginTop: 6 }}
           />
         </label>

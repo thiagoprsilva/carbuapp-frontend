@@ -9,16 +9,19 @@ export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Faz logout e volta para a tela de login
   function handleLogout() {
     logout();
     navigate("/login");
   }
 
+  // Verifica se a rota atual está ativa
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
+  // Fecha a sidebar ao navegar no mobile
   function handleMobileNavigate() {
     setSidebarOpen(false);
   }
@@ -26,7 +29,11 @@ export default function Layout() {
   return (
     <div className="app-shell">
       {/* BOTÃO MOBILE */}
-      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Abrir menu"
+      >
         ☰
       </button>
 
@@ -40,24 +47,30 @@ export default function Layout() {
 
       {/* SIDEBAR */}
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        {/* TOPO DA SIDEBAR */}
         <div className="sidebar-header">
+          {/* BOTÃO FECHAR NO MOBILE */}
           <button
             className="sidebar-close-btn"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Fechar menu"
           >
             ✕
           </button>
 
+          {/* LOGO */}
           <img
             src="/carbuapplogo.png"
-            alt="Logo do escritório"
+            alt="Logo do CarbuApp"
             className="sidebar-logo"
           />
 
+          {/* TÍTULO E NOME DA OFICINA */}
           <div className="sidebar-title">CarbuApp</div>
           <div className="sidebar-subtitle">{oficina?.nome ?? "Oficina"}</div>
         </div>
 
+        {/* MENU DE NAVEGAÇÃO */}
         <nav className="sidebar-nav">
           <Link
             className={`nav-link ${isActive("/") ? "active" : ""}`}
@@ -100,11 +113,14 @@ export default function Layout() {
           </Link>
         </nav>
 
+        {/* RODAPÉ DA SIDEBAR */}
         <div className="sidebar-footer">
           <div className="divider" />
 
           <div className="sidebar-user">
+            <div className="sidebar-user-label">Logado como</div>
             <div className="sidebar-user-name">{user?.nome ?? "Usuário"}</div>
+
             <button className="btn btnRed w-full" onClick={handleLogout}>
               Sair
             </button>
@@ -112,13 +128,15 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* CONTEÚDO */}
+      {/* CONTEÚDO PRINCIPAL */}
       <main className="content">
         <div className="container">
+          {/* TOPO DO CONTEÚDO */}
           <div className="content-topbar">
             <GlobalSearch />
           </div>
 
+          {/* PÁGINAS INTERNAS */}
           <Outlet />
         </div>
       </main>
