@@ -11,16 +11,10 @@ type Cliente = {
 
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-
-  // create
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
-
-  // ui
   const [loadingList, setLoadingList] = useState(true);
   const [creating, setCreating] = useState(false);
-
-  // edit mode
   const [editId, setEditId] = useState<number | null>(null);
   const [editNome, setEditNome] = useState("");
   const [editTelefone, setEditTelefone] = useState("");
@@ -39,7 +33,6 @@ export default function Clientes() {
     loadClientes();
   }, []);
 
-  // CREATE
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
@@ -65,7 +58,6 @@ export default function Clientes() {
     }
   }
 
-  // ENTER EDIT MODE
   function startEdit(cliente: Cliente) {
     setEditId(cliente.id);
     setEditNome(cliente.nome);
@@ -78,7 +70,6 @@ export default function Clientes() {
     setEditTelefone("");
   }
 
-  // UPDATE
   async function saveEdit(clienteId: number) {
     if (!editNome.trim()) {
       alert("Nome não pode ficar vazio.");
@@ -98,7 +89,6 @@ export default function Clientes() {
     }
   }
 
-  // DELETE
   async function handleDelete(clienteId: number, clienteNome: string) {
     const ok = confirm(`Tem certeza que deseja remover o cliente "${clienteNome}"?`);
     if (!ok) return;
@@ -113,32 +103,22 @@ export default function Clientes() {
 
   return (
     <div>
-      {/* HEADER */}
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Clientes</h2>
           <div className="sub">Cadastre e gerencie seus clientes.</div>
         </div>
       </div>
 
-      {/* CREATE FORM */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <form onSubmit={handleCreate} className="row" style={{ justifyContent: "flex-start", flexWrap: "wrap" }}>
-          <input
-            className="input"
-            placeholder="Nome"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            style={{ width: 280 }}
-          />
+      <div className="card card-section">
+        <form onSubmit={handleCreate} className="inline-form">
+          <div className="field-wide">
+            <input className="input" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+          </div>
 
-          <input
-            className="input"
-            placeholder="Telefone"
-            value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-            style={{ width: 220 }}
-          />
+          <div className="field-medium">
+            <input className="input" placeholder="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
+          </div>
 
           <button type="submit" disabled={creating} className="btn btnPrimary">
             {creating ? "Salvando..." : "Novo Cliente"}
@@ -146,93 +126,81 @@ export default function Clientes() {
         </form>
       </div>
 
-      {/* LIST */}
       {loadingList ? (
         <div className="card">Carregando...</div>
       ) : (
         <div className="card">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th style={{ width: 260 }}>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {clientes.length === 0 ? (
+          <div className="table-scroll">
+            <table className="table table-min-md">
+              <thead>
                 <tr>
-                  <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
-                    Nenhum cliente cadastrado.
-                  </td>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th style={{ width: 260 }}>Ações</th>
                 </tr>
-              ) : (
-                clientes.map((c) => {
-                  const isEditing = editId === c.id;
+              </thead>
 
-                  return (
-                    <tr key={c.id}>
-                      {/* NOME */}
-                      <td>
-                        {isEditing ? (
-                          <input
-                            className="input"
-                            value={editNome}
-                            onChange={(e) => setEditNome(e.target.value)}
-                            style={{ width: "100%" }}
-                          />
-                        ) : (
-                          <Link to={`/clientes/${c.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
-                            {c.nome}
-                          </Link>
-                        )}
-                      </td>
+              <tbody>
+                {clientes.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
+                      Nenhum cliente cadastrado.
+                    </td>
+                  </tr>
+                ) : (
+                  clientes.map((c) => {
+                    const isEditing = editId === c.id;
 
-                      {/* TELEFONE */}
-                      <td>
-                        {isEditing ? (
-                          <input
-                            className="input"
-                            value={editTelefone}
-                            onChange={(e) => setEditTelefone(e.target.value)}
-                            style={{ width: 220 }}
-                          />
-                        ) : (
-                          c.telefone ?? "-"
-                        )}
-                      </td>
+                    return (
+                      <tr key={c.id}>
+                        <td>
+                          {isEditing ? (
+                            <input className="input" value={editNome} onChange={(e) => setEditNome(e.target.value)} />
+                          ) : (
+                            <Link to={`/clientes/${c.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
+                              {c.nome}
+                            </Link>
+                          )}
+                        </td>
 
-                      {/* AÇÕES */}
-                      <td>
-                        {isEditing ? (
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => saveEdit(c.id)} className="btn btnPrimary">
-                              Salvar
-                            </button>
+                        <td>
+                          {isEditing ? (
+                            <input className="input" value={editTelefone} onChange={(e) => setEditTelefone(e.target.value)} />
+                          ) : (
+                            c.telefone ?? "-"
+                          )}
+                        </td>
 
-                            <button onClick={cancelEdit} className="btn btnGray">
-                              Cancelar
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => startEdit(c)} className="btn btnBlue">
-                              Editar
-                            </button>
+                        <td>
+                          {isEditing ? (
+                            <div className="action-group">
+                              <button onClick={() => saveEdit(c.id)} className="btn btnPrimary" type="button">
+                                Salvar
+                              </button>
 
-                            <button onClick={() => handleDelete(c.id, c.nome)} className="btn btnRed">
-                              Excluir
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                              <button onClick={cancelEdit} className="btn btnGray" type="button">
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="action-group">
+                              <button onClick={() => startEdit(c)} className="btn btnBlue" type="button">
+                                Editar
+                              </button>
+
+                              <button onClick={() => handleDelete(c.id, c.nome)} className="btn btnRed" type="button">
+                                Excluir
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

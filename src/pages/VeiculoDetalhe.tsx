@@ -63,11 +63,8 @@ export default function VeiculoDetalhe() {
   const [registros, setRegistros] = useState<RegistroTecnico[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // ===== UI: criar Registro Técnico inline =====
   const [showCreateRegistro, setShowCreateRegistro] = useState(false);
   const [creatingRegistro, setCreatingRegistro] = useState(false);
-
   const categoriasPadrao = ["Revisão", "Personalização", "Projeto"];
   const [categoria, setCategoria] = useState(categoriasPadrao[0]);
   const [descricao, setDescricao] = useState("");
@@ -79,18 +76,15 @@ export default function VeiculoDetalhe() {
     return `${yyyy}-${mm}-${dd}`;
   });
   const [observacoes, setObservacoes] = useState("");
+  const [showCreateOrcamento, setShowCreateOrcamento] = useState(false);
+  const [creatingOrcamento, setCreatingOrcamento] = useState(false);
+  const [itens, setItens] = useState<OrcamentoItemDraft[]>([{ descricao: "", qtd: 1, precoUnit: 0 }]);
 
   function resetRegistroForm() {
     setCategoria(categoriasPadrao[0]);
     setDescricao("");
     setObservacoes("");
   }
-
-  // ===== UI: criar Orçamento inline =====
-  const [showCreateOrcamento, setShowCreateOrcamento] = useState(false);
-  const [creatingOrcamento, setCreatingOrcamento] = useState(false);
-
-  const [itens, setItens] = useState<OrcamentoItemDraft[]>([{ descricao: "", qtd: 1, precoUnit: 0 }]);
 
   function resetOrcamentoForm() {
     setItens([{ descricao: "", qtd: 1, precoUnit: 0 }]);
@@ -105,8 +99,8 @@ export default function VeiculoDetalhe() {
     try {
       const [vRes, rRes, oRes] = await Promise.all([
         api.get<Veiculo>(`/veiculos/${veiculoId}`),
-        api.get<RegistroTecnico[]>(`/registroTecnico`, { params: { veiculoId } }),
-        api.get<Orcamento[]>(`/orcamento`, { params: { veiculoId } }),
+        api.get<RegistroTecnico[]>("/registroTecnico", { params: { veiculoId } }),
+        api.get<Orcamento[]>("/orcamento", { params: { veiculoId } }),
       ]);
 
       setVeiculo(vRes.data);
@@ -122,7 +116,6 @@ export default function VeiculoDetalhe() {
   useEffect(() => {
     if (!veiculoId) return;
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [veiculoId]);
 
   async function handlePdf(orcamentoId: number) {
@@ -141,7 +134,6 @@ export default function VeiculoDetalhe() {
     return new Date(iso).toLocaleDateString("pt-BR");
   }
 
-  // ===== CREATE: Registro Técnico =====
   async function handleCreateRegistro(e: React.FormEvent) {
     e.preventDefault();
 
@@ -171,7 +163,6 @@ export default function VeiculoDetalhe() {
     }
   }
 
-  // ===== CREATE: Orçamento =====
   function updateItem(index: number, patch: Partial<OrcamentoItemDraft>) {
     setItens((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
   }
@@ -221,8 +212,7 @@ export default function VeiculoDetalhe() {
 
   return (
     <div>
-      {/* HEADER */}
-      <div className="row" style={{ marginBottom: 14 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Detalhe do Veículo</h2>
           <div style={{ fontSize: 20, fontWeight: 900 }}>
@@ -241,12 +231,12 @@ export default function VeiculoDetalhe() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <button className="btn btnBlue" onClick={() => setShowCreateRegistro((v) => !v)}>
+        <div className="page-header-actions">
+          <button className="btn btnBlue" onClick={() => setShowCreateRegistro((v) => !v)} type="button">
             {showCreateRegistro ? "Fechar Registro" : "Novo Registro"}
           </button>
 
-          <button className="btn btnPrimary" onClick={() => setShowCreateOrcamento((v) => !v)}>
+          <button className="btn btnPrimary" onClick={() => setShowCreateOrcamento((v) => !v)} type="button">
             {showCreateOrcamento ? "Fechar Orçamento" : "Novo Orçamento"}
           </button>
 
@@ -256,40 +246,45 @@ export default function VeiculoDetalhe() {
         </div>
       </div>
 
-      {/* FORM: NOVO REGISTRO */}
       {showCreateRegistro && (
-        <div className="card" style={{ marginBottom: 14 }}>
-          <div className="row" style={{ marginBottom: 10 }}>
+        <div className="card card-section">
+          <div className="page-header" style={{ marginBottom: 10 }}>
             <h3 style={{ margin: 0 }}>Cadastrar Registro Técnico</h3>
             <span className="badge">Veículo #{veiculoId}</span>
           </div>
 
-          <form onSubmit={handleCreateRegistro} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <select className="select" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ minWidth: 220 }}>
-              {categoriasPadrao.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+          <form onSubmit={handleCreateRegistro} className="inline-form">
+            <div className="field-medium">
+              <select className="select" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                {categoriasPadrao.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              className="input"
-              placeholder="Descrição do serviço (obrigatório)"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              style={{ width: 360 }}
-            />
+            <div className="field-wide">
+              <input
+                className="input"
+                placeholder="Descrição do serviço (obrigatório)"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+              />
+            </div>
 
-            <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} style={{ width: 160 }} />
+            <div className="field-medium">
+              <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} />
+            </div>
 
-            <input
-              className="input"
-              placeholder="Observações (opcional)"
-              value={observacoes}
-              onChange={(e) => setObservacoes(e.target.value)}
-              style={{ width: 320 }}
-            />
+            <div className="field-wide">
+              <input
+                className="input"
+                placeholder="Observações (opcional)"
+                value={observacoes}
+                onChange={(e) => setObservacoes(e.target.value)}
+              />
+            </div>
 
             <button type="submit" disabled={creatingRegistro} className="btn btnPrimary">
               {creatingRegistro ? "Salvando..." : "Salvar Registro"}
@@ -298,72 +293,67 @@ export default function VeiculoDetalhe() {
         </div>
       )}
 
-      {/* FORM: NOVO ORÇAMENTO */}
       {showCreateOrcamento && (
-        <div className="card" style={{ marginBottom: 14 }}>
-          <div className="row" style={{ marginBottom: 10 }}>
+        <div className="card card-section">
+          <div className="page-header" style={{ marginBottom: 10 }}>
             <h3 style={{ margin: 0 }}>Criar Orçamento</h3>
             <span className="badge">Prévia: R$ {totalPreview.toFixed(2)}</span>
           </div>
 
           <form onSubmit={handleCreateOrcamento} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {itens.map((it, idx) => (
-              <div key={idx} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                <input
-                  className="input"
-                  placeholder="Descrição do item"
-                  value={it.descricao}
-                  onChange={(e) => updateItem(idx, { descricao: e.target.value })}
-                  style={{ width: 420 }}
-                />
+              <div key={idx} className="card" style={{ padding: 12 }}>
+                <div className="item-row">
+                  <input
+                    className="input"
+                    placeholder="Descrição do item"
+                    value={it.descricao}
+                    onChange={(e) => updateItem(idx, { descricao: e.target.value })}
+                  />
 
-                <input
-                  className="input"
-                  type="number"
-                  min={1}
-                  placeholder="Qtd"
-                  value={it.qtd}
-                  onChange={(e) => updateItem(idx, { qtd: Number(e.target.value) })}
-                  style={{ width: 120 }}
-                />
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    placeholder="Qtd"
+                    value={it.qtd}
+                    onChange={(e) => updateItem(idx, { qtd: Number(e.target.value) })}
+                  />
 
-                <input
-                  className="input"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder="Preço Unit"
-                  value={it.precoUnit}
-                  onChange={(e) => updateItem(idx, { precoUnit: Number(e.target.value) })}
-                  style={{ width: 140 }}
-                />
+                  <input
+                    className="input"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    placeholder="Preço Unit"
+                    value={it.precoUnit}
+                    onChange={(e) => updateItem(idx, { precoUnit: Number(e.target.value) })}
+                  />
 
-                <span className="badge">R$ {(Number(it.qtd) * Number(it.precoUnit)).toFixed(2)}</span>
+                  <span className="badge">R$ {(Number(it.qtd) * Number(it.precoUnit)).toFixed(2)}</span>
 
-                <button type="button" onClick={() => removeItem(idx)} className="btn btnRed">
-                  Remover
-                </button>
+                  <button type="button" onClick={() => removeItem(idx)} className="btn btnRed">
+                    Remover
+                  </button>
+                </div>
               </div>
             ))}
 
-            <div className="row" style={{ justifyContent: "flex-start", gap: 10 }}>
+            <div className="summary-line">
               <button type="button" onClick={addItem} className="btn btnBlue">
                 + Adicionar item
               </button>
 
-              <div style={{ marginLeft: "auto" }}>
-                <button type="submit" disabled={creatingOrcamento} className="btn btnPrimary">
-                  {creatingOrcamento ? "Salvando..." : "Salvar Orçamento"}
-                </button>
-              </div>
+              <button type="submit" disabled={creatingOrcamento} className="btn btnPrimary">
+                {creatingOrcamento ? "Salvando..." : "Salvar Orçamento"}
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* REGISTROS */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div className="row" style={{ marginBottom: 10 }}>
+      <div className="card card-section">
+        <div className="page-header" style={{ marginBottom: 10 }}>
           <h3 style={{ margin: 0 }}>Histórico Técnico</h3>
           <span className="badge">{registros.length} registro(s)</span>
         </div>
@@ -371,32 +361,33 @@ export default function VeiculoDetalhe() {
         {registros.length === 0 ? (
           <div className="sub">Nenhum registro técnico encontrado.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Categoria</th>
-                <th>Descrição</th>
-                <th>Orçamento</th>
-              </tr>
-            </thead>
-            <tbody>
-              {registros.map((r) => (
-                <tr key={r.id}>
-                  <td>{formatPtBr(r.dataServico)}</td>
-                  <td>{r.categoria}</td>
-                  <td>{r.descricao}</td>
-                  <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+          <div className="table-scroll">
+            <table className="table table-min-md">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th>Orçamento</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {registros.map((r) => (
+                  <tr key={r.id}>
+                    <td>{formatPtBr(r.dataServico)}</td>
+                    <td>{r.categoria}</td>
+                    <td>{r.descricao}</td>
+                    <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* ORÇAMENTOS */}
       <div className="card">
-        <div className="row" style={{ marginBottom: 10 }}>
+        <div className="page-header" style={{ marginBottom: 10 }}>
           <h3 style={{ margin: 0 }}>Orçamentos</h3>
           <span className="badge">{orcamentos.length} orçamento(s)</span>
         </div>
@@ -404,30 +395,34 @@ export default function VeiculoDetalhe() {
         {orcamentos.length === 0 ? (
           <div className="sub">Nenhum orçamento encontrado.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Número</th>
-                <th>Data</th>
-                <th>Total</th>
-                <th style={{ width: 160 }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orcamentos.map((o) => (
-                <tr key={o.id}>
-                  <td>#{o.numero}</td>
-                  <td>{formatPtBr(o.createdAt)}</td>
-                  <td>R$ {Number(o.total).toFixed(2)}</td>
-                  <td>
-                    <button className="btn btnPrimary" onClick={() => handlePdf(o.id)}>
-                      PDF
-                    </button>
-                  </td>
+          <div className="table-scroll">
+            <table className="table table-min-md">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Data</th>
+                  <th>Total</th>
+                  <th style={{ width: 160 }}>Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orcamentos.map((o) => (
+                  <tr key={o.id}>
+                    <td>#{o.numero}</td>
+                    <td>{formatPtBr(o.createdAt)}</td>
+                    <td>R$ {Number(o.total).toFixed(2)}</td>
+                    <td>
+                      <div className="action-group">
+                        <button className="btn btnPrimary" onClick={() => handlePdf(o.id)} type="button">
+                          PDF
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

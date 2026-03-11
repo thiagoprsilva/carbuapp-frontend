@@ -42,7 +42,6 @@ type Summary = {
 
 export default function Dashboard() {
   const { user, oficina, logout } = useAuth();
-
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,8 +68,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="row">
+      <div className="page-header">
         <div>
           <h2 className="h2">Dashboard</h2>
           <div className="sub">
@@ -79,7 +77,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div className="page-header-actions">
           <button className="btn btnGray" onClick={loadSummary} type="button" disabled={loading}>
             {loading ? "Atualizando..." : "Atualizar"}
           </button>
@@ -90,7 +88,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Conteúdo */}
       {loading ? (
         <div className="card" style={{ marginTop: 14 }}>
           Carregando...
@@ -106,7 +103,6 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          {/* Cards */}
           <div className="grid4" style={{ marginTop: 14 }}>
             <Link className="card" to="/clientes" style={{ textDecoration: "none", color: "inherit" }}>
               <div className="sub">Clientes</div>
@@ -129,11 +125,9 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {/* Recentes */}
           <div className="grid2" style={{ marginTop: 14 }}>
-            {/* Últimos Registros */}
             <div className="card">
-              <div className="row">
+              <div className="page-header" style={{ marginBottom: 10 }}>
                 <h3 style={{ margin: 0 }}>Últimos Registros</h3>
                 <Link to="/registros" className="btn">
                   Ver todos
@@ -145,41 +139,39 @@ export default function Dashboard() {
                   Nenhum registro.
                 </div>
               ) : (
-                <table className="table" style={{ marginTop: 10 }}>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Veículo</th>
-                      <th>Categoria</th>
-                      <th>Orçamento</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summary.recentes.registros.map((r) => (
-                      <tr key={r.id}>
-                        <td>{formatPtBr(r.dataServico)}</td>
-                        <td>
-                          <Link
-                            to={`/veiculos/${r.veiculo.id}`}
-                            style={{ fontWeight: 900, textDecoration: "none" }}
-                          >
-                            {r.veiculo.modelo} ({r.veiculo.placa})
-                          </Link>
-                        </td>
-                        <td>
-                          <span className="badge">{r.categoria}</span>
-                        </td>
-                        <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                <div className="table-scroll" style={{ marginTop: 10 }}>
+                  <table className="table table-min-md">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Veículo</th>
+                        <th>Categoria</th>
+                        <th>Orçamento</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {summary.recentes.registros.map((r) => (
+                        <tr key={r.id}>
+                          <td>{formatPtBr(r.dataServico)}</td>
+                          <td>
+                            <Link to={`/veiculos/${r.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
+                              {r.veiculo.modelo} ({r.veiculo.placa})
+                            </Link>
+                          </td>
+                          <td>
+                            <span className="badge">{r.categoria}</span>
+                          </td>
+                          <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 
-            {/* Últimos Orçamentos */}
             <div className="card">
-              <div className="row">
+              <div className="page-header" style={{ marginBottom: 10 }}>
                 <h3 style={{ margin: 0 }}>Últimos Orçamentos</h3>
                 <Link to="/orcamentos" className="btn">
                   Ver todos
@@ -191,33 +183,32 @@ export default function Dashboard() {
                   Nenhum orçamento.
                 </div>
               ) : (
-                <table className="table" style={{ marginTop: 10 }}>
-                  <thead>
-                    <tr>
-                      <th>Número</th>
-                      <th>Data</th>
-                      <th>Veículo</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summary.recentes.orcamentos.map((o) => (
-                      <tr key={o.id}>
-                        <td style={{ fontWeight: 900 }}>#{o.numero}</td>
-                        <td>{formatPtBr(o.createdAt)}</td>
-                        <td>
-                          <Link
-                            to={`/veiculos/${o.veiculo.id}`}
-                            style={{ fontWeight: 900, textDecoration: "none" }}
-                          >
-                            {o.veiculo.modelo} ({o.veiculo.placa})
-                          </Link>
-                        </td>
-                        <td>R$ {Number(o.total).toFixed(2)}</td>
+                <div className="table-scroll" style={{ marginTop: 10 }}>
+                  <table className="table table-min-md">
+                    <thead>
+                      <tr>
+                        <th>Número</th>
+                        <th>Data</th>
+                        <th>Veículo</th>
+                        <th>Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {summary.recentes.orcamentos.map((o) => (
+                        <tr key={o.id}>
+                          <td style={{ fontWeight: 900 }}>#{o.numero}</td>
+                          <td>{formatPtBr(o.createdAt)}</td>
+                          <td>
+                            <Link to={`/veiculos/${o.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
+                              {o.veiculo.modelo} ({o.veiculo.placa})
+                            </Link>
+                          </td>
+                          <td>R$ {Number(o.total).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

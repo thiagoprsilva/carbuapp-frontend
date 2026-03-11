@@ -12,7 +12,7 @@ type RegistroTecnico = {
   id: number;
   categoria: string;
   descricao: string;
-  dataServico: string; // ISO vindo do backend
+  dataServico: string;
   observacoes?: string | null;
   createdAt: string;
   veiculoId: number;
@@ -21,7 +21,6 @@ type RegistroTecnico = {
 
 const categoriasFixas = ["Revisão", "Manutenção", "Personalização", "Projeto", "Diagnóstico"];
 
-/** converte ISO -> "YYYY-MM-DD" (para input type="date") */
 function isoToDateInput(iso: string) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -31,28 +30,21 @@ function isoToDateInput(iso: string) {
   return `${year}-${month}-${day}`;
 }
 
-/** formata ISO para pt-BR */
 function formatPtBr(iso: string) {
   if (!iso) return "-";
   return new Date(iso).toLocaleDateString("pt-BR");
 }
 
 export default function Registros() {
-  // listagens
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [registros, setRegistros] = useState<RegistroTecnico[]>([]);
-
-  // create form
   const [veiculoId, setVeiculoId] = useState<number>(0);
   const [categoria, setCategoria] = useState(categoriasFixas[0]);
   const [descricao, setDescricao] = useState("");
   const [dataServico, setDataServico] = useState("");
   const [observacoes, setObservacoes] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-
-  // edit mode
   const [editId, setEditId] = useState<number | null>(null);
   const [editVeiculoId, setEditVeiculoId] = useState<number>(0);
   const [editCategoria, setEditCategoria] = useState(categoriasFixas[0]);
@@ -84,7 +76,6 @@ export default function Registros() {
     refresh();
   }, []);
 
-  // CREATE
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
@@ -97,14 +88,13 @@ export default function Registros() {
         veiculoId,
         categoria,
         descricao: descricao.trim(),
-        dataServico, // YYYY-MM-DD
+        dataServico,
         observacoes: observacoes.trim() || null,
       });
 
       setDescricao("");
       setObservacoes("");
       setDataServico("");
-
       await loadRegistros();
     } catch (error: any) {
       alert(error?.response?.data?.message ?? "Erro ao criar registro técnico.");
@@ -113,7 +103,6 @@ export default function Registros() {
     }
   }
 
-  // ENTER EDIT
   function startEdit(r: RegistroTecnico) {
     setEditId(r.id);
     setEditVeiculoId(r.veiculoId);
@@ -132,7 +121,6 @@ export default function Registros() {
     setEditObservacoes("");
   }
 
-  // UPDATE
   async function saveEdit(id: number) {
     if (!editVeiculoId) return alert("Selecione um veículo.");
     if (!editDescricao.trim() || !editDataServico.trim()) return alert("Descrição e data são obrigatórias.");
@@ -142,7 +130,7 @@ export default function Registros() {
         veiculoId: editVeiculoId,
         categoria: editCategoria,
         descricao: editDescricao.trim(),
-        dataServico: editDataServico, // YYYY-MM-DD
+        dataServico: editDataServico,
         observacoes: editObservacoes.trim() || null,
       });
 
@@ -153,7 +141,6 @@ export default function Registros() {
     }
   }
 
-  // DELETE
   async function handleDelete(id: number) {
     const ok = confirm("Tem certeza que deseja remover este registro técnico?");
     if (!ok) return;
@@ -170,7 +157,7 @@ export default function Registros() {
 
   return (
     <div>
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Histórico Técnico</h2>
           <div className="sub">Registre serviços, manutenção e observações por veículo.</div>
@@ -178,187 +165,174 @@ export default function Registros() {
         <span className="badge">{registros.length} registro(s)</span>
       </div>
 
-      {/* CREATE FORM */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <form onSubmit={handleCreate} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <select
-            className="select"
-            value={veiculoId}
-            onChange={(e) => setVeiculoId(Number(e.target.value))}
-            disabled={veiculos.length === 0}
-            style={{ minWidth: 320 }}
-          >
-            {veiculos.length === 0 ? (
-              <option value={0}>Nenhum veículo cadastrado</option>
-            ) : (
-              veiculos.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.modelo} ({v.placa})
+      <div className="card card-section">
+        <form onSubmit={handleCreate} className="inline-form">
+          <div className="field-wide">
+            <select
+              className="select"
+              value={veiculoId}
+              onChange={(e) => setVeiculoId(Number(e.target.value))}
+              disabled={veiculos.length === 0}
+            >
+              {veiculos.length === 0 ? (
+                <option value={0}>Nenhum veículo cadastrado</option>
+              ) : (
+                veiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.modelo} ({v.placa})
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="field-medium">
+            <select className="select" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+              {categoriasFixas.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
-              ))
-            )}
-          </select>
+              ))}
+            </select>
+          </div>
 
-          <select className="select" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ minWidth: 200 }}>
-            {categoriasFixas.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+          <div className="field-medium">
+            <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} />
+          </div>
 
-          <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} />
+          <div className="field-wide">
+            <input
+              className="input"
+              placeholder="Descrição do serviço realizado"
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+            />
+          </div>
 
-          <input
-            className="input"
-            placeholder="Descrição do serviço realizado"
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-            style={{ width: 360 }}
-          />
+          <div className="field-wide">
+            <input
+              className="input"
+              placeholder="Observações (opcional)"
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+            />
+          </div>
 
-          <input
-            className="input"
-            placeholder="Observações (opcional)"
-            value={observacoes}
-            onChange={(e) => setObservacoes(e.target.value)}
-            style={{ width: 280 }}
-          />
-
-          <button type="submit" disabled={creating || veiculos.length === 0} className={`btn btnPrimary`}>
+          <button type="submit" disabled={creating || veiculos.length === 0} className="btn btnPrimary">
             {creating ? "Salvando..." : "Registrar"}
           </button>
         </form>
       </div>
 
-      {/* LIST */}
       <div className="card">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Veículo</th>
-              <th>Categoria</th>
-              <th>Descrição</th>
-              <th>Data</th>
-              <th>Obs</th>
-              <th style={{ width: 260 }}>Ações</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {registros.length === 0 ? (
+        <div className="table-scroll">
+          <table className="table table-min-xl">
+            <thead>
               <tr>
-                <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
-                  Nenhum registro cadastrado.
-                </td>
+                <th>Veículo</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Data</th>
+                <th>Obs</th>
+                <th style={{ width: 260 }}>Ações</th>
               </tr>
-            ) : (
-              registros.map((r) => {
-                const editing = editId === r.id;
+            </thead>
 
-                return (
-                  <tr key={r.id}>
-                    <td>
-                      {editing ? (
-                        <select
-                          className="select"
-                          value={editVeiculoId}
-                          onChange={(e) => setEditVeiculoId(Number(e.target.value))}
-                          style={{ minWidth: 280 }}
-                        >
-                          {veiculos.map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.modelo} ({v.placa})
-                            </option>
-                          ))}
-                        </select>
-                      ) : r.veiculo ? (
-                        `${r.veiculo.modelo} (${r.veiculo.placa})`
-                      ) : (
-                        `Veículo #${r.veiculoId}`
-                      )}
-                    </td>
+            <tbody>
+              {registros.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
+                    Nenhum registro cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                registros.map((r) => {
+                  const editing = editId === r.id;
 
-                    <td>
-                      {editing ? (
-                        <select className="select" value={editCategoria} onChange={(e) => setEditCategoria(e.target.value)}>
-                          {categoriasFixas.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        r.categoria
-                      )}
-                    </td>
+                  return (
+                    <tr key={r.id}>
+                      <td>
+                        {editing ? (
+                          <select className="select" value={editVeiculoId} onChange={(e) => setEditVeiculoId(Number(e.target.value))}>
+                            {veiculos.map((v) => (
+                              <option key={v.id} value={v.id}>
+                                {v.modelo} ({v.placa})
+                              </option>
+                            ))}
+                          </select>
+                        ) : r.veiculo ? (
+                          `${r.veiculo.modelo} (${r.veiculo.placa})`
+                        ) : (
+                          `Veículo #${r.veiculoId}`
+                        )}
+                      </td>
 
-                    <td>
-                      {editing ? (
-                        <input
-                          className="input"
-                          value={editDescricao}
-                          onChange={(e) => setEditDescricao(e.target.value)}
-                          style={{ width: 360 }}
-                        />
-                      ) : (
-                        r.descricao
-                      )}
-                    </td>
+                      <td>
+                        {editing ? (
+                          <select className="select" value={editCategoria} onChange={(e) => setEditCategoria(e.target.value)}>
+                            {categoriasFixas.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          r.categoria
+                        )}
+                      </td>
 
-                    <td>
-                      {editing ? (
-                        <input
-                          className="input"
-                          type="date"
-                          value={editDataServico}
-                          onChange={(e) => setEditDataServico(e.target.value)}
-                        />
-                      ) : (
-                        formatPtBr(r.dataServico)
-                      )}
-                    </td>
+                      <td>
+                        {editing ? (
+                          <input className="input" value={editDescricao} onChange={(e) => setEditDescricao(e.target.value)} />
+                        ) : (
+                          r.descricao
+                        )}
+                      </td>
 
-                    <td>
-                      {editing ? (
-                        <input
-                          className="input"
-                          value={editObservacoes}
-                          onChange={(e) => setEditObservacoes(e.target.value)}
-                          style={{ width: 260 }}
-                        />
-                      ) : (
-                        r.observacoes ?? "-"
-                      )}
-                    </td>
+                      <td>
+                        {editing ? (
+                          <input className="input" type="date" value={editDataServico} onChange={(e) => setEditDataServico(e.target.value)} />
+                        ) : (
+                          formatPtBr(r.dataServico)
+                        )}
+                      </td>
 
-                    <td>
-                      {editing ? (
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          <button onClick={() => saveEdit(r.id)} className="btn btnPrimary" type="button">
-                            Salvar
-                          </button>
-                          <button onClick={cancelEdit} className="btn btnGray" type="button">
-                            Cancelar
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          <button onClick={() => startEdit(r)} className="btn btnBlue" type="button">
-                            Editar
-                          </button>
-                          <button onClick={() => handleDelete(r.id)} className="btn btnRed" type="button">
-                            Excluir
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      <td>
+                        {editing ? (
+                          <input className="input" value={editObservacoes} onChange={(e) => setEditObservacoes(e.target.value)} />
+                        ) : (
+                          r.observacoes ?? "-"
+                        )}
+                      </td>
+
+                      <td>
+                        {editing ? (
+                          <div className="action-group">
+                            <button onClick={() => saveEdit(r.id)} className="btn btnPrimary" type="button">
+                              Salvar
+                            </button>
+                            <button onClick={cancelEdit} className="btn btnGray" type="button">
+                              Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="action-group">
+                            <button onClick={() => startEdit(r)} className="btn btnBlue" type="button">
+                              Editar
+                            </button>
+                            <button onClick={() => handleDelete(r.id)} className="btn btnRed" type="button">
+                              Excluir
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

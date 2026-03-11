@@ -165,6 +165,7 @@ a{ color: var(--blue); }
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 /* container agora centraliza e limita largura */
@@ -208,6 +209,7 @@ a{ color: var(--blue); }
   gap: 10px;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .h2{
@@ -231,6 +233,187 @@ a{ color: var(--blue); }
   gap: 12px;
 }
 
+.page-header{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.page-header-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.card-section{
+  margin-bottom: 14px;
+}
+
+.inline-form{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field-grow{
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.field-wide{
+  flex: 2 1 320px;
+  min-width: 0;
+}
+
+.field-compact{
+  flex: 0 1 120px;
+}
+
+.field-medium{
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.input,
+.select{
+  width: 100%;
+}
+
+.table-scroll{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll .table{
+  min-width: 100%;
+}
+
+.table-min-md{
+  min-width: 640px;
+}
+
+.table-min-lg{
+  min-width: 840px;
+}
+
+.table-min-xl{
+  min-width: 1080px;
+}
+
+.action-group{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.action-group.end{
+  justify-content: flex-end;
+}
+
+.summary-line{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.detail-grid{
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-span-4{
+  grid-column: span 4;
+}
+
+.detail-span-6{
+  grid-column: span 6;
+}
+
+.detail-span-8{
+  grid-column: span 8;
+}
+
+.detail-span-12{
+  grid-column: span 12;
+}
+
+.item-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-row{
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) repeat(2, minmax(110px, .8fr)) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.auth-shell{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card{
+  width: min(100%, 440px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, .08);
+}
+
+.auth-logo{
+  width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.auth-title{
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle{
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.auth-form{
+  display: grid;
+  gap: 14px;
+}
+
+.form-label{
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.error-text{
+  color: #b91c1c;
+  font-size: 14px;
+}
+
 /* responsivo */
 @media (max-width: 1100px){
   .grid4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -240,6 +423,47 @@ a{ color: var(--blue); }
   .grid4{ grid-template-columns: 1fr; }
   .grid2{ grid-template-columns: 1fr; }
   .container{ padding: 12px; }
+  .card{ padding: 14px; }
+  .page-header{ margin-bottom: 12px; }
+  .page-header-actions,
+  .action-group{
+    width: 100%;
+  }
+  .page-header-actions .btn,
+  .action-group .btn{
+    flex: 1 1 140px;
+  }
+  .field-grow,
+  .field-wide,
+  .field-medium,
+  .field-compact{
+    flex-basis: 100%;
+  }
+  .summary-line{
+    align-items: stretch;
+  }
+  .summary-line .btn{
+    width: 100%;
+  }
+  .detail-grid{
+    grid-template-columns: 1fr;
+  }
+  .detail-span-4,
+  .detail-span-6,
+  .detail-span-8,
+  .detail-span-12{
+    grid-column: auto;
+  }
+  .item-row{
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .item-row .badge{
+    justify-content: center;
+  }
+  .item-row .btn{
+    width: 100%;
+  }
 
   .mobile-menu-btn{
     display: flex;
@@ -300,8 +524,20 @@ a{ color: var(--blue); }
   }
 
   .content-topbar{
-    justify-content: flex-end;
+    justify-content: stretch;
     margin-top: 4px;
+  }
+  .content-topbar > *{
+    width: 100%;
+  }
+  .auth-shell{
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .auth-card{
+    padding: 18px;
+    border-radius: 16px;
+    margin-top: 52px;
   }
 }
 
@@ -398,6 +634,7 @@ a{ color: var(--blue); }
 .table td{
   padding: 10px;
   border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
 }
 
 .table tr:hover{

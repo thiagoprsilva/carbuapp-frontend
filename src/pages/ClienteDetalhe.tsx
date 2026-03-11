@@ -27,11 +27,8 @@ export default function ClienteDetalhe() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // UI: Criar veículo inline
   const [showCreateVeiculo, setShowCreateVeiculo] = useState(false);
   const [creatingVeiculo, setCreatingVeiculo] = useState(false);
-
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
@@ -51,7 +48,7 @@ export default function ClienteDetalhe() {
     try {
       const [cRes, vRes] = await Promise.all([
         api.get<Cliente>(`/clientes/${clienteId}`),
-        api.get<Veiculo[]>(`/veiculos`, { params: { clienteId } }),
+        api.get<Veiculo[]>("/veiculos", { params: { clienteId } }),
       ]);
 
       setCliente(cRes.data);
@@ -66,7 +63,6 @@ export default function ClienteDetalhe() {
   useEffect(() => {
     if (!clienteId) return;
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteId]);
 
   async function handleCreateVeiculo(e: React.FormEvent) {
@@ -103,16 +99,15 @@ export default function ClienteDetalhe() {
 
   return (
     <div>
-      {/* HEADER */}
-      <div className="row" style={{ marginBottom: 14 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Detalhe do Cliente</h2>
           <div style={{ fontSize: 20, fontWeight: 900 }}>{cliente.nome}</div>
           <div className="sub">Telefone: {cliente.telefone ?? "-"}</div>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn btnPrimary" onClick={() => setShowCreateVeiculo((v) => !v)}>
+        <div className="page-header-actions">
+          <button className="btn btnPrimary" onClick={() => setShowCreateVeiculo((v) => !v)} type="button">
             {showCreateVeiculo ? "Fechar" : "Novo Veículo"}
           </button>
 
@@ -122,42 +117,48 @@ export default function ClienteDetalhe() {
         </div>
       </div>
 
-      {/* FORM INLINE: NOVO VEÍCULO */}
       {showCreateVeiculo && (
-        <div className="card" style={{ marginBottom: 14 }}>
-          <div className="row" style={{ marginBottom: 10, justifyContent: "flex-start" }}>
+        <div className="card card-section">
+          <div className="page-header" style={{ marginBottom: 10 }}>
             <h3 style={{ margin: 0 }}>Cadastrar novo veículo</h3>
             <span className="badge">Cliente #{clienteId}</span>
           </div>
 
-          <form onSubmit={handleCreateVeiculo} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <input
-              className="input"
-              placeholder="Placa (ex: ABC1D23)"
-              value={placa}
-              onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-              style={{ width: 180 }}
-            />
+          <form onSubmit={handleCreateVeiculo} className="inline-form">
+            <div className="field-medium">
+              <input
+                className="input"
+                placeholder="Placa (ex: ABC1D23)"
+                value={placa}
+                onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+              />
+            </div>
 
-            <input
-              className="input"
-              placeholder="Modelo (ex: Gol 1988)"
-              value={modelo}
-              onChange={(e) => setModelo(e.target.value)}
-              style={{ width: 240 }}
-            />
+            <div className="field-wide">
+              <input
+                className="input"
+                placeholder="Modelo (ex: Gol 1988)"
+                value={modelo}
+                onChange={(e) => setModelo(e.target.value)}
+              />
+            </div>
 
-            <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} style={{ width: 120 }} />
+            <div className="field-compact">
+              <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} />
+            </div>
 
-            <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} style={{ width: 180 }} />
+            <div className="field-medium">
+              <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} />
+            </div>
 
-            <input
-              className="input"
-              placeholder="Alimentação (Carburado/Turbo/Stage)"
-              value={alimentacao}
-              onChange={(e) => setAlimentacao(e.target.value)}
-              style={{ width: 260 }}
-            />
+            <div className="field-wide">
+              <input
+                className="input"
+                placeholder="Alimentação (Carburado/Turbo/Stage)"
+                value={alimentacao}
+                onChange={(e) => setAlimentacao(e.target.value)}
+              />
+            </div>
 
             <button type="submit" disabled={creatingVeiculo} className="btn btnBlue">
               {creatingVeiculo ? "Salvando..." : "Salvar Veículo"}
@@ -166,9 +167,8 @@ export default function ClienteDetalhe() {
         </div>
       )}
 
-      {/* LISTA DE VEÍCULOS */}
       <div className="card">
-        <div className="row" style={{ marginBottom: 10 }}>
+        <div className="page-header" style={{ marginBottom: 10 }}>
           <h3 style={{ margin: 0 }}>Veículos do cliente</h3>
           <span className="badge">{veiculos.length} veículo(s)</span>
         </div>
@@ -176,30 +176,32 @@ export default function ClienteDetalhe() {
         {veiculos.length === 0 ? (
           <div className="sub">Nenhum veículo cadastrado.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Veículo</th>
-                <th>Ano</th>
-                <th>Motor</th>
-                <th>Alimentação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {veiculos.map((v) => (
-                <tr key={v.id}>
-                  <td>
-                    <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
-                      {v.modelo} ({v.placa})
-                    </Link>
-                  </td>
-                  <td>{v.ano ?? "-"}</td>
-                  <td>{v.motor ?? "-"}</td>
-                  <td>{v.alimentacao ?? "-"}</td>
+          <div className="table-scroll">
+            <table className="table table-min-md">
+              <thead>
+                <tr>
+                  <th>Veículo</th>
+                  <th>Ano</th>
+                  <th>Motor</th>
+                  <th>Alimentação</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {veiculos.map((v) => (
+                  <tr key={v.id}>
+                    <td>
+                      <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
+                        {v.modelo} ({v.placa})
+                      </Link>
+                    </td>
+                    <td>{v.ano ?? "-"}</td>
+                    <td>{v.motor ?? "-"}</td>
+                    <td>{v.alimentacao ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

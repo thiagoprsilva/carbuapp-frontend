@@ -1,8 +1,8 @@
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 type Oficina = {
   id: number;
@@ -21,13 +21,11 @@ export default function Login() {
 
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
   const [oficinaId, setOficinaId] = useState<number>(1);
-
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Busca oficinas públicas para montar dropdown
   useEffect(() => {
     api
       .get<Oficina[]>("/public/oficinas")
@@ -79,75 +77,56 @@ export default function Login() {
   }
 
   return (
-    // Teste logo
-    <div style={{ maxWidth: 420, margin: "60px auto", padding: 20 }}>
-      <div className="text-center mb-6">
-        <img
-          src="/carbuapplogo.png"
-          alt="CarbuApp"
-          style={{
-            width: "120px",
-            height: "auto",
-            display: "block",
-            margin: "0 auto 8px",
-          }}
-        />
+    <div className="auth-shell">
+      <div className="auth-card">
+        <img src="/carbuapplogo.png" alt="CarbuApp" className="auth-logo" />
 
-        <p className="text-gray-500 text-sm">
-          Sistema para Oficinas Automotivas
+        <h1 className="auth-title">CarbuApp</h1>
+        <p className="auth-subtitle">Sistema para Oficinas Automotivas</p>
+        <p className="sub" style={{ marginTop: 0, marginBottom: 18 }}>
+          Escolha a oficina e faça login
         </p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label className="form-label">
+            Oficina
+            <select className="select" value={oficinaId} onChange={(e) => setOficinaId(Number(e.target.value))}>
+              {oficinas.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.nome} - {o.responsavel}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="form-label">
+            E-mail
+            <input
+              className="input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={credencialAtual.email}
+            />
+          </label>
+
+          <label className="form-label">
+            Senha
+            <input
+              className="input"
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder={credencialAtual.senha}
+            />
+          </label>
+
+          {error && <div className="error-text">{error}</div>}
+
+          <button type="submit" disabled={loading} className="btn btnPrimary w-full">
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
       </div>
-
-      <p style={{ marginTop: 0, opacity: 0.8 }}>
-        Escolha a oficina e faça login
-      </p>
-
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 12 }}>
-        <label>
-          Oficina
-          <select
-            value={oficinaId}
-            onChange={(e) => setOficinaId(Number(e.target.value))}
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
-          >
-            {oficinas.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.nome} — {o.responsavel}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          E-mail
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={credencialAtual.email}
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
-          />
-        </label>
-
-        <label>
-          Senha
-          <input
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            style={{ width: "100%", padding: 10, marginTop: 6 }}
-          />
-        </label>
-
-        {error && <div style={{ color: "crimson" }}>{error}</div>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: 12, cursor: "pointer" }}
-        >
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
     </div>
   );
 }

@@ -43,18 +43,13 @@ export default function Orcamentos() {
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // CREATE/EDIT state
   const [editingId, setEditingId] = useState<number | null>(null);
   const isEditing = editingId !== null;
 
   const [veiculoId, setVeiculoId] = useState<number>(0);
-
-  // itens (form)
   const [itemDescricao, setItemDescricao] = useState("");
   const [itemQtd, setItemQtd] = useState<number>(1);
   const [itemPreco, setItemPreco] = useState<number>(0);
-
-  // itens do orçamento em edição/criação
   const [itensDraft, setItensDraft] = useState<Array<{ descricao: string; qtd: number; precoUnit: number }>>([]);
 
   const subtotalDraft = useMemo(() => {
@@ -175,7 +170,6 @@ export default function Orcamentos() {
     }
   }
 
-  // ✅ integra: gerar registro técnico a partir do orçamento (com prompts)
   function todayYYYYMMDD() {
     const d = new Date();
     const y = d.getFullYear();
@@ -229,7 +223,7 @@ export default function Orcamentos() {
 
   return (
     <div>
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Orçamentos</h2>
           <div className="sub">Crie, edite, gere PDF e transforme em Registro Técnico.</div>
@@ -237,9 +231,8 @@ export default function Orcamentos() {
         <span className="badge">{orcamentos.length} orçamento(s)</span>
       </div>
 
-      {/* FORM */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <div className="row" style={{ marginBottom: 10 }}>
+      <div className="card card-section">
+        <div className="page-header" style={{ marginBottom: 10 }}>
           <h3 style={{ margin: 0 }}>{isEditing ? `Editando Orçamento #${editingId}` : "Novo Orçamento"}</h3>
           {isEditing && (
             <button onClick={resetForm} className="btn btnGray" type="button">
@@ -248,94 +241,91 @@ export default function Orcamentos() {
           )}
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        {/* Mantém o cabeçalho do formulário legível em qualquer breakpoint. */}
+        <div className="inline-form" style={{ marginBottom: 12, alignItems: "center" }}>
           <span className="badge">Veículo</span>
 
-          <select className="select" value={veiculoId} onChange={(e) => setVeiculoId(Number(e.target.value))} style={{ minWidth: 360 }}>
-            {veiculos.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.modelo} ({v.placa}) — {v.cliente?.nome ?? "Sem cliente"}
-              </option>
-            ))}
-          </select>
+          <div className="field-wide">
+            <select className="select" value={veiculoId} onChange={(e) => setVeiculoId(Number(e.target.value))}>
+              {veiculos.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.modelo} ({v.placa}) - {v.cliente?.nome ?? "Sem cliente"}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <span className="badge">Subtotal: R$ {subtotalDraft.toFixed(2)}</span>
         </div>
 
-        {/* Add item */}
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
-          <input
-            className="input"
-            placeholder="Descrição do item"
-            value={itemDescricao}
-            onChange={(e) => setItemDescricao(e.target.value)}
-            style={{ width: 360 }}
-          />
+        <div className="inline-form" style={{ marginBottom: 12 }}>
+          <div className="field-wide">
+            <input
+              className="input"
+              placeholder="Descrição do item"
+              value={itemDescricao}
+              onChange={(e) => setItemDescricao(e.target.value)}
+            />
+          </div>
 
-          <input
-            className="input"
-            type="number"
-            placeholder="Qtd"
-            value={itemQtd}
-            onChange={(e) => setItemQtd(Number(e.target.value))}
-            style={{ width: 110 }}
-            min={1}
-          />
+          <div className="field-compact">
+            <input
+              className="input"
+              type="number"
+              placeholder="Qtd"
+              value={itemQtd}
+              onChange={(e) => setItemQtd(Number(e.target.value))}
+              min={1}
+            />
+          </div>
 
-          <input
-            className="input"
-            type="number"
-            placeholder="Preço unit."
-            value={itemPreco}
-            onChange={(e) => setItemPreco(Number(e.target.value))}
-            style={{ width: 140 }}
-            min={0}
-            step="0.01"
-          />
+          <div className="field-medium">
+            <input
+              className="input"
+              type="number"
+              placeholder="Preço unit."
+              value={itemPreco}
+              onChange={(e) => setItemPreco(Number(e.target.value))}
+              min={0}
+              step="0.01"
+            />
+          </div>
 
           <button onClick={addItem} className="btn btnPrimary" type="button">
             Adicionar item
           </button>
         </div>
 
-        {/* Items table */}
-        <table className="table" style={{ marginBottom: 12 }}>
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Qtd</th>
-              <th>Unit</th>
-              <th>Total</th>
-              <th style={{ width: 160 }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {itensDraft.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ padding: 12, opacity: 0.7 }}>
-                  Nenhum item adicionado.
-                </td>
-              </tr>
-            ) : (
-              itensDraft.map((it, idx) => (
-                <tr key={idx}>
-                  <td>{it.descricao}</td>
-                  <td>{it.qtd}</td>
-                  <td>R$ {Number(it.precoUnit).toFixed(2)}</td>
-                  <td>R$ {(Number(it.qtd) * Number(it.precoUnit)).toFixed(2)}</td>
-                  <td>
-                    <button onClick={() => removeItem(idx)} className="btn btnRed" type="button">
-                      Remover
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        {/* No mobile os itens quebram em blocos para evitar uma tabela apertada. */}
+        <div className="item-list" style={{ marginBottom: 12 }}>
+          {itensDraft.length === 0 ? (
+            <div className="table">
+              <div style={{ padding: 12, opacity: 0.7 }}>Nenhum item adicionado.</div>
+            </div>
+          ) : (
+            itensDraft.map((it, idx) => (
+              <div key={idx} className="card" style={{ padding: 12 }}>
+                <div className="item-row">
+                  <div>
+                    <div style={{ fontWeight: 800 }}>{it.descricao}</div>
+                    <div className="sub">Item #{idx + 1}</div>
+                  </div>
+                  <span className="badge">Qtd: {it.qtd}</span>
+                  <span className="badge">Unit: R$ {Number(it.precoUnit).toFixed(2)}</span>
+                  <span className="badge">Total: R$ {(Number(it.qtd) * Number(it.precoUnit)).toFixed(2)}</span>
+                  <button onClick={() => removeItem(idx)} className="btn btnRed" type="button">
+                    Remover
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-        <div className="row">
-          <div className="sub">Total estimado: <b>R$ {subtotalDraft.toFixed(2)}</b></div>
+        <div className="summary-line">
+          <div className="sub">
+            Total estimado: <b>R$ {subtotalDraft.toFixed(2)}</b>
+          </div>
 
           {isEditing ? (
             <button onClick={handleUpdate} className="btn btnBlue" type="button">
@@ -349,65 +339,65 @@ export default function Orcamentos() {
         </div>
       </div>
 
-      {/* LIST */}
       <div className="card">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Veículo</th>
-              <th>Total</th>
-              <th>Data</th>
-              <th style={{ width: 520 }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orcamentos.length === 0 ? (
+        <div className="table-scroll">
+          <table className="table table-min-xl">
+            <thead>
               <tr>
-                <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
-                  Nenhum orçamento cadastrado.
-                </td>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Veículo</th>
+                <th>Total</th>
+                <th>Data</th>
+                <th style={{ width: 520 }}>Ações</th>
               </tr>
-            ) : (
-              orcamentos.map((o) => (
-                <tr key={o.id}>
-                  <td>{o.numero}</td>
-                  <td>{o.veiculo?.cliente?.nome ?? "-"}</td>
-                  <td>{o.veiculo ? `${o.veiculo.modelo} (${o.veiculo.placa})` : `Veículo #${o.veiculoId}`}</td>
-                  <td>R$ {Number(o.total).toFixed(2)}</td>
-                  <td>{formatDate(o.createdAt)}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button onClick={() => startEdit(o)} className="btn btnBlue" type="button">
-                        Editar
-                      </button>
-
-                      <button onClick={() => handlePdf(o.id)} className="btn btnPrimary" type="button">
-                        PDF
-                      </button>
-
-                      {/* Verde: como você não tem classe no CSS, usei inline mínimo só aqui.
-                          Se quiser, eu te passo a classe .btnGreen no global.css. */}
-                      <button
-                        onClick={() => gerarRegistroDoOrcamento(o)}
-                        type="button"
-                        className="btn"
-                        style={{ background: "#16a34a", borderColor: "#16a34a", color: "#fff" }}
-                      >
-                        Gerar Registro
-                      </button>
-
-                      <button onClick={() => handleDelete(o.id)} className="btn btnRed" type="button">
-                        Excluir
-                      </button>
-                    </div>
+            </thead>
+            <tbody>
+              {orcamentos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
+                    Nenhum orçamento cadastrado.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                orcamentos.map((o) => (
+                  <tr key={o.id}>
+                    <td>{o.numero}</td>
+                    <td>{o.veiculo?.cliente?.nome ?? "-"}</td>
+                    <td>{o.veiculo ? `${o.veiculo.modelo} (${o.veiculo.placa})` : `Veículo #${o.veiculoId}`}</td>
+                    <td>R$ {Number(o.total).toFixed(2)}</td>
+                    <td>{formatDate(o.createdAt)}</td>
+                    <td>
+                      <div className="action-group">
+                        <button onClick={() => startEdit(o)} className="btn btnBlue" type="button">
+                          Editar
+                        </button>
+
+                        <button onClick={() => handlePdf(o.id)} className="btn btnPrimary" type="button">
+                          PDF
+                        </button>
+
+                        {/* Mantém a ação extra visível mesmo quando os botões precisam quebrar linha. */}
+                        <button
+                          onClick={() => gerarRegistroDoOrcamento(o)}
+                          type="button"
+                          className="btn"
+                          style={{ background: "#16a34a", borderColor: "#16a34a", color: "#fff" }}
+                        >
+                          Gerar Registro
+                        </button>
+
+                        <button onClick={() => handleDelete(o.id)} className="btn btnRed" type="button">
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

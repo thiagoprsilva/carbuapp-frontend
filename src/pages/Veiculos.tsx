@@ -29,15 +29,10 @@ type Veiculo = {
 const ALIMENTACAO_OPCOES = ["Gasolina", "Flex", "Etanol", "Diesel"] as const;
 
 export default function Veiculos() {
-  // dropdown de clientes
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loadingClientes, setLoadingClientes] = useState(true);
-
-  // lista de veículos
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [loadingList, setLoadingList] = useState(true);
-
-  // create
   const [clienteId, setClienteId] = useState<number>(0);
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
@@ -45,8 +40,6 @@ export default function Veiculos() {
   const [motor, setMotor] = useState("");
   const [alimentacao, setAlimentacao] = useState("");
   const [creating, setCreating] = useState(false);
-
-  // edit mode
   const [editId, setEditId] = useState<number | null>(null);
   const [editClienteId, setEditClienteId] = useState<number>(0);
   const [editPlaca, setEditPlaca] = useState("");
@@ -81,7 +74,6 @@ export default function Veiculos() {
     loadVeiculos();
   }, []);
 
-  // CREATE
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
@@ -105,7 +97,6 @@ export default function Veiculos() {
         alimentacao: alimentacao.trim() || null,
       });
 
-      // limpa form
       setPlaca("");
       setModelo("");
       setAno("");
@@ -129,7 +120,6 @@ export default function Veiculos() {
     }
   }
 
-  // ENTER EDIT MODE
   function startEdit(v: Veiculo) {
     setEditId(v.id);
     setEditClienteId(v.clienteId);
@@ -150,7 +140,6 @@ export default function Veiculos() {
     setEditAlimentacao("");
   }
 
-  // UPDATE
   async function saveEdit(id: number) {
     if (!editClienteId) {
       alert("Selecione um cliente.");
@@ -187,7 +176,6 @@ export default function Veiculos() {
     }
   }
 
-  // DELETE
   async function handleDelete(id: number, label: string) {
     const ok = confirm(`Tem certeza que deseja remover o veículo "${label}"?`);
     if (!ok) return;
@@ -211,8 +199,7 @@ export default function Veiculos() {
 
   return (
     <div>
-      {/* HEADER */}
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="page-header">
         <div>
           <h2 className="h2">Veículos</h2>
           <div className="sub">Cadastre e gerencie os veículos dos clientes.</div>
@@ -220,58 +207,63 @@ export default function Veiculos() {
         <span className="badge">{veiculos.length} veículo(s)</span>
       </div>
 
-      {/* CREATE FORM */}
-      <div className="card" style={{ marginBottom: 14 }}>
-        <form onSubmit={handleCreate} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <select
-            className="select"
-            value={clienteId}
-            onChange={(e) => setClienteId(Number(e.target.value))}
-            disabled={loadingClientes || clientes.length === 0}
-            style={{ minWidth: 260 }}
-          >
-            {clientes.length === 0 ? (
-              <option value={0}>Nenhum cliente cadastrado</option>
-            ) : (
-              clientes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
+      <div className="card card-section">
+        <form onSubmit={handleCreate} className="inline-form">
+          <div className="field-wide">
+            <select
+              className="select"
+              value={clienteId}
+              onChange={(e) => setClienteId(Number(e.target.value))}
+              disabled={loadingClientes || clientes.length === 0}
+            >
+              {clientes.length === 0 ? (
+                <option value={0}>Nenhum cliente cadastrado</option>
+              ) : (
+                clientes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="field-medium">
+            <input
+              className="input"
+              placeholder="Placa (ex: ABC1D23)"
+              value={placa}
+              onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+            />
+          </div>
+
+          <div className="field-wide">
+            <input
+              className="input"
+              placeholder="Modelo (ex: Gol 1988)"
+              value={modelo}
+              onChange={(e) => setModelo(e.target.value)}
+            />
+          </div>
+
+          <div className="field-compact">
+            <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} />
+          </div>
+
+          <div className="field-medium">
+            <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} />
+          </div>
+
+          <div className="field-medium">
+            <select className="select" value={alimentacao} onChange={(e) => setAlimentacao(e.target.value)}>
+              <option value="">Selecione a alimentação</option>
+              {ALIMENTACAO_OPCOES.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
                 </option>
-              ))
-            )}
-          </select>
-
-          <input
-            className="input"
-            placeholder="Placa (ex: ABC1D23)"
-            value={placa}
-            onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-            style={{ width: 180 }}
-          />
-
-          <input
-            className="input"
-            placeholder="Modelo (ex: Gol 1988)"
-            value={modelo}
-            onChange={(e) => setModelo(e.target.value)}
-            style={{ width: 240 }}
-          />
-
-          <input className="input" placeholder="Ano" value={ano} onChange={(e) => setAno(e.target.value)} style={{ width: 120 }} />
-          <input className="input" placeholder="Motor" value={motor} onChange={(e) => setMotor(e.target.value)} style={{ width: 180 }} />
-          <select
-            className="select"
-            value={alimentacao}
-            onChange={(e) => setAlimentacao(e.target.value)}
-            style={{ width: 260 }}
-          >
-            <option value="">Selecione a alimentação</option>
-            {ALIMENTACAO_OPCOES.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+              ))}
+            </select>
+          </div>
 
           <button type="submit" disabled={creating || clientes.length === 0} className="btn btnPrimary">
             {creating ? "Salvando..." : "Novo Veículo"}
@@ -279,145 +271,124 @@ export default function Veiculos() {
         </form>
       </div>
 
-      {/* LIST */}
       {loadingList ? (
         <div className="card">Carregando...</div>
       ) : (
         <div className="card">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Placa</th>
-                <th>Modelo</th>
-                <th>Ano</th>
-                <th>Motor</th>
-                <th>Alimentação</th>
-                <th style={{ width: 260 }}>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {veiculos.length === 0 ? (
+          <div className="table-scroll">
+            <table className="table table-min-xl">
+              <thead>
                 <tr>
-                  <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
-                    Nenhum veículo cadastrado.
-                  </td>
+                  <th>Cliente</th>
+                  <th>Placa</th>
+                  <th>Modelo</th>
+                  <th>Ano</th>
+                  <th>Motor</th>
+                  <th>Alimentação</th>
+                  <th style={{ width: 260 }}>Ações</th>
                 </tr>
-              ) : (
-                veiculos.map((v) => {
-                  const isEditing = editId === v.id;
+              </thead>
 
-                  return (
-                    <tr key={v.id}>
-                      {/* CLIENTE */}
-                      <td>
-                        {isEditing ? (
-                          <select
-                            className="select"
-                            value={editClienteId}
-                            onChange={(e) => setEditClienteId(Number(e.target.value))}
-                            style={{ width: 220 }}
-                          >
-                            {clientes.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.nome}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          v.cliente?.nome ?? `Cliente #${v.clienteId}`
-                        )}
-                      </td>
+              <tbody>
+                {veiculos.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
+                      Nenhum veículo cadastrado.
+                    </td>
+                  </tr>
+                ) : (
+                  veiculos.map((v) => {
+                    const isEditing = editId === v.id;
 
-                      {/* PLACA */}
-                      <td>
-                        {isEditing ? (
-                          <input
-                            className="input"
-                            value={editPlaca}
-                            onChange={(e) => setEditPlaca(e.target.value.toUpperCase())}
-                            style={{ width: 140 }}
-                          />
-                        ) : (
-                          v.placa
-                        )}
-                      </td>
+                    return (
+                      <tr key={v.id}>
+                        <td>
+                          {isEditing ? (
+                            <select className="select" value={editClienteId} onChange={(e) => setEditClienteId(Number(e.target.value))}>
+                              {clientes.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {c.nome}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            v.cliente?.nome ?? `Cliente #${v.clienteId}`
+                          )}
+                        </td>
 
-                      {/* MODELO (com link pro detalhe) */}
-                      <td>
-                        {isEditing ? (
-                          <input
-                            className="input"
-                            value={editModelo}
-                            onChange={(e) => setEditModelo(e.target.value)}
-                            style={{ width: 220 }}
-                          />
-                        ) : (
-                          <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
-                            {v.modelo}
-                          </Link>
-                        )}
-                      </td>
+                        <td>
+                          {isEditing ? (
+                            <input
+                              className="input"
+                              value={editPlaca}
+                              onChange={(e) => setEditPlaca(e.target.value.toUpperCase())}
+                            />
+                          ) : (
+                            v.placa
+                          )}
+                        </td>
 
-                      <td>{isEditing ? <input className="input" value={editAno} onChange={(e) => setEditAno(e.target.value)} style={{ width: 110 }} /> : v.ano ?? "-"}</td>
+                        <td>
+                          {isEditing ? (
+                            <input className="input" value={editModelo} onChange={(e) => setEditModelo(e.target.value)} />
+                          ) : (
+                            <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
+                              {v.modelo}
+                            </Link>
+                          )}
+                        </td>
 
-                      <td>
-                        {isEditing ? (
-                          <input className="input" value={editMotor} onChange={(e) => setEditMotor(e.target.value)} style={{ width: 160 }} />
-                        ) : (
-                          v.motor ?? "-"
-                        )}
-                      </td>
+                        <td>
+                          {isEditing ? <input className="input" value={editAno} onChange={(e) => setEditAno(e.target.value)} /> : v.ano ?? "-"}
+                        </td>
 
-                      <td>
-                        {isEditing ? (
-                          <select
-                            className="select"
-                            value={editAlimentacao}
-                            onChange={(e) => setEditAlimentacao(e.target.value)}
-                            style={{ width: 180 }}
-                          >
-                            <option value="">Selecione a alimentação</option>
-                            {ALIMENTACAO_OPCOES.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          v.alimentacao ?? "-"
-                        )}
-                      </td>
+                        <td>
+                          {isEditing ? <input className="input" value={editMotor} onChange={(e) => setEditMotor(e.target.value)} /> : v.motor ?? "-"}
+                        </td>
 
-                      {/* AÇÕES */}
-                      <td>
-                        {isEditing ? (
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => saveEdit(v.id)} className="btn btnPrimary">
-                              Salvar
-                            </button>
-                            <button onClick={cancelEdit} className="btn btnGray">
-                              Cancelar
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button onClick={() => startEdit(v)} className="btn btnBlue">
-                              Editar
-                            </button>
-                            <button onClick={() => handleDelete(v.id, `${v.modelo} (${v.placa})`)} className="btn btnRed">
-                              Excluir
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <td>
+                          {isEditing ? (
+                            <select className="select" value={editAlimentacao} onChange={(e) => setEditAlimentacao(e.target.value)}>
+                              <option value="">Selecione a alimentação</option>
+                              {ALIMENTACAO_OPCOES.map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            v.alimentacao ?? "-"
+                          )}
+                        </td>
+
+                        <td>
+                          {isEditing ? (
+                            <div className="action-group">
+                              <button onClick={() => saveEdit(v.id)} className="btn btnPrimary" type="button">
+                                Salvar
+                              </button>
+                              <button onClick={cancelEdit} className="btn btnGray" type="button">
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="action-group">
+                              <button onClick={() => startEdit(v)} className="btn btnBlue" type="button">
+                                Editar
+                              </button>
+                              <button onClick={() => handleDelete(v.id, `${v.modelo} (${v.placa})`)} className="btn btnRed" type="button">
+                                Excluir
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
