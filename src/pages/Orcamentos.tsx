@@ -49,7 +49,7 @@ export default function Orcamentos() {
   const [veiculoId, setVeiculoId] = useState<number>(0);
   const [itemDescricao, setItemDescricao] = useState("");
   const [itemQtd, setItemQtd] = useState<number>(1);
-  const [itemPreco, setItemPreco] = useState<number>(0);
+  const [itemPreco, setItemPreco] = useState<number | "">("");
   const [itensDraft, setItensDraft] = useState<Array<{ descricao: string; qtd: number; precoUnit: number }>>([]);
 
   const subtotalDraft = useMemo(() => {
@@ -85,23 +85,23 @@ export default function Orcamentos() {
     if (veiculos.length > 0) setVeiculoId(veiculos[0].id);
     setItemDescricao("");
     setItemQtd(1);
-    setItemPreco(0);
+    setItemPreco("");
     setItensDraft([]);
   }
 
   function addItem() {
     if (!itemDescricao.trim()) return alert("Descrição do item é obrigatória.");
     if (!itemQtd || itemQtd <= 0) return alert("Qtd deve ser maior que 0.");
-    if (itemPreco < 0) return alert("Preço unitário inválido.");
+    if (itemPreco !== "" && itemPreco < 0) return alert("Preço unitário inválido.");
 
     setItensDraft((prev) => [
       ...prev,
-      { descricao: itemDescricao.trim(), qtd: Number(itemQtd), precoUnit: Number(itemPreco) },
+      { descricao: itemDescricao.trim(), qtd: Number(itemQtd), precoUnit: Number(itemPreco) || 0 },
     ]);
 
     setItemDescricao("");
     setItemQtd(1);
-    setItemPreco(0);
+    setItemPreco("");
   }
 
   function removeItem(index: number) {
@@ -272,7 +272,8 @@ export default function Orcamentos() {
             <input
               className="input"
               type="number"
-              placeholder="Qtd"
+              placeholder="Qtd."
+              aria-label="Quantidade do item"
               value={itemQtd}
               onChange={(e) => setItemQtd(Number(e.target.value))}
               min={1}
@@ -283,9 +284,10 @@ export default function Orcamentos() {
             <input
               className="input"
               type="number"
-              placeholder="Preço unit."
+              placeholder="Valor"
+              aria-label="Valor do item"
               value={itemPreco}
-              onChange={(e) => setItemPreco(Number(e.target.value))}
+              onChange={(e) => setItemPreco(e.target.value === "" ? "" : Number(e.target.value))}
               min={0}
               step="0.01"
             />
