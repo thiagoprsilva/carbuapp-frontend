@@ -1,5 +1,5 @@
-# CarbuApp – Frontend  
-### Sistema de Gestão para Oficinas Automotivas  
+# CarbuApp – Frontend
+### Sistema de Gestão para Oficinas Automotivas
 **Projeto Integrador – UNASP 2026/1**
 
 ---
@@ -19,51 +19,8 @@ O frontend é responsável pela interface visual do sistema, permitindo que mec�
 
 O sistema foi pensado para oficinas que ainda trabalham com papel ou planilhas simples.
 
-Cliente de referência:  
-**Commenale Motorsports**  
-**Apocalypse Custom**
-
----
-
-# Tecnologias Utilizadas
-
-- **React**
-- **TypeScript**
-- **Vite**
-- **React Router**
-- **Axios**
-- **CSS Custom (Global Styles)**
-
----
-
-# Arquitetura do Frontend
-
-O frontend consome a API do backend via **HTTP REST**.
-
-Backend utilizado:
-# CarbuApp – Frontend  
-### Sistema de Gestão para Oficinas Automotivas  
-**Projeto Integrador – UNASP 2026/1**
-
----
-
-# Sobre o Projeto
-
-O **CarbuApp** é um sistema web para gestão de oficinas automotivas de pequeno porte.
-
-O frontend é responsável pela interface visual do sistema, permitindo que mecânicos e gestores da oficina possam:
-
-- Gerenciar clientes
-- Controlar veículos
-- Registrar histórico técnico
-- Criar orçamentos
-- Gerar PDFs de orçamento
-- Consultar dados da oficina
-
-O sistema foi pensado para oficinas que ainda trabalham com papel ou planilhas simples.
-
-Cliente de referência:  
-**Commenale Motorsports**  
+Cliente de referência:
+**Commenale Motorsports**
 **Apocalypse Custom**
 
 ---
@@ -205,6 +162,8 @@ global.css
 
 # Como Rodar o Frontend
 
+**Caminho na VPS:** `/opt/carbuapp-frontend`
+
 ## 1 - Instalar dependências
 npm install
 ## 2 - Rodar aplicação
@@ -230,14 +189,14 @@ https://github.com/thiagoprsilva/carbuapp-backend
 
 # Status Atual do Frontend
 
-✔ Login funcional  
-✔ Dashboard integrado  
-✔ CRUD completo de clientes  
-✔ CRUD completo de veículos  
-✔ Histórico técnico funcional  
-✔ Sistema de orçamentos com itens  
-✔ Geração de PDF  
-✔ Layout com sidebar  
+✔ Login funcional
+✔ Dashboard integrado
+✔ CRUD completo de clientes
+✔ CRUD completo de veículos
+✔ Histórico técnico funcional
+✔ Sistema de orçamentos com itens
+✔ Geração de PDF
+✔ Layout com sidebar
 
 Frontend considerado **MVP funcional completo**.
 
@@ -245,10 +204,10 @@ Frontend considerado **MVP funcional completo**.
 
 # Informações Acadêmicas
 
-**Aluno:** Thiago Pereira Silva  
-**RA:** 060242  
-**Turma:** GTADSI53B  
-**Curso:** Análise e Desenvolvimento de Sistemas  
-**Instituição:** UNASP 
+**Aluno:** Thiago Pereira Silva
+**RA:** 060242
+**Turma:** GTADSI53B
+**Curso:** Análise e Desenvolvimento de Sistemas
+**Instituição:** UNASP
 
 Projeto Integrador – 2026/1
