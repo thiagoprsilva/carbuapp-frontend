@@ -26,6 +26,8 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
+            echo "VITE_API_URL=https://api.carbuapp.com.br" > .env
+
             npm install
 
             npm run build
