@@ -162,8 +162,6 @@ global.css
 
 # Como Rodar o Frontend
 
-**Caminho na VPS:** `/opt/carbuapp-frontend`
-
 ## 1 - Instalar dependências
 npm install
 ## 2 - Rodar aplicação
@@ -204,9 +202,6 @@ Frontend considerado **MVP funcional completo**.
 
 # Informações Acadêmicas
 
-**Aluno:** Thiago Pereira Silva
-**RA:** 060242
-**Turma:** GTADSI53B
 **Curso:** Análise e Desenvolvimento de Sistemas
 **Instituição:** UNASP
 
