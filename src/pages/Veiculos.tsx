@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { api } from "../services/api";
+import ConfirmModal from "../components/ConfirmModal";
 
 type Cliente = {
   id: number;
@@ -47,6 +48,11 @@ export default function Veiculos() {
   const [editAno, setEditAno] = useState("");
   const [editMotor, setEditMotor] = useState("");
   const [editAlimentacao, setEditAlimentacao] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{
+    open: boolean;
+    id: number | null;
+    label: string;
+  }>({ open: false, id: null, label: "" });
 
   async function loadClientes() {
     setLoadingClientes(true);
@@ -78,11 +84,11 @@ export default function Veiculos() {
     e.preventDefault();
 
     if (!clienteId) {
-      alert("Selecione um cliente.");
+      toast.error("Selecione um cliente.");
       return;
     }
     if (!placa.trim() || !modelo.trim()) {
-      alert("Placa e modelo são obrigatórios.");
+      toast.error("Placa e modelo são obrigatórios.");
       return;
     }
 
@@ -97,24 +103,15 @@ export default function Veiculos() {
         alimentacao: alimentacao.trim() || null,
       });
 
+      toast.success("Veículo cadastrado!");
       setPlaca("");
       setModelo("");
       setAno("");
       setMotor("");
       setAlimentacao("");
-
       await loadVeiculos();
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          (err.response?.data as { message?: string } | undefined)?.message ??
-          "Erro ao criar veículo.";
-        alert(message);
-      } else if (err instanceof Error) {
-        alert(err.message || "Erro ao criar veículo.");
-      } else {
-        alert("Erro ao criar veículo.");
-      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Erro ao criar veículo.");
     } finally {
       setCreating(false);
     }
@@ -142,11 +139,11 @@ export default function Veiculos() {
 
   async function saveEdit(id: number) {
     if (!editClienteId) {
-      alert("Selecione um cliente.");
+      toast.error("Selecione um cliente.");
       return;
     }
     if (!editPlaca.trim() || !editModelo.trim()) {
-      alert("Placa e modelo são obrigatórios.");
+      toast.error("Placa e modelo são obrigatórios.");
       return;
     }
 
@@ -160,45 +157,44 @@ export default function Veiculos() {
         alimentacao: editAlimentacao.trim() || null,
       });
 
+      toast.success("Veículo atualizado!");
       cancelEdit();
       await loadVeiculos();
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          (err.response?.data as { message?: string } | undefined)?.message ??
-          "Erro ao atualizar veículo.";
-        alert(message);
-      } else if (err instanceof Error) {
-        alert(err.message || "Erro ao atualizar veículo.");
-      } else {
-        alert("Erro ao atualizar veículo.");
-      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Erro ao atualizar veículo.");
     }
   }
 
-  async function handleDelete(id: number, label: string) {
-    const ok = confirm(`Tem certeza que deseja remover o veículo "${label}"?`);
-    if (!ok) return;
+  function pedirConfirmacaoDelete(id: number, label: string) {
+    setConfirmDelete({ open: true, id, label });
+  }
+
+  async function confirmarDelete() {
+    const id = confirmDelete.id;
+    setConfirmDelete({ open: false, id: null, label: "" });
+    if (!id) return;
 
     try {
       await api.delete(`/veiculos/${id}`);
+      toast.success("Veículo removido.");
       await loadVeiculos();
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          (err.response?.data as { message?: string } | undefined)?.message ??
-          "Erro ao remover veículo.";
-        alert(message);
-      } else if (err instanceof Error) {
-        alert(err.message || "Erro ao remover veículo.");
-      } else {
-        alert("Erro ao remover veículo.");
-      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Erro ao remover veículo.");
     }
   }
 
   return (
     <div>
+      <ConfirmModal
+        open={confirmDelete.open}
+        title="Remover veículo"
+        message={`Tem certeza que deseja remover o veículo "${confirmDelete.label}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Remover"
+        danger
+        onConfirm={confirmarDelete}
+        onCancel={() => setConfirmDelete({ open: false, id: null, label: "" })}
+      />
+
       <div className="page-header">
         <div>
           <h2 className="h2">Veículos</h2>
@@ -376,7 +372,7 @@ export default function Veiculos() {
                               <button onClick={() => startEdit(v)} className="btn btnBlue" type="button">
                                 Editar
                               </button>
-                              <button onClick={() => handleDelete(v.id, `${v.modelo} (${v.placa})`)} className="btn btnRed" type="button">
+                              <button onClick={() => pedirConfirmacaoDelete(v.id, `${v.modelo} (${v.placa})`)} className="btn btnRed" type="button">
                                 Excluir
                               </button>
                             </div>

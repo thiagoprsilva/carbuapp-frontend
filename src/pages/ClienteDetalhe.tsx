@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { api } from "../services/api";
 
 type Cliente = {
@@ -54,7 +55,7 @@ export default function ClienteDetalhe() {
       setCliente(cRes.data);
       setVeiculos(vRes.data);
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao carregar cliente.");
+      toast.error(error?.response?.data?.message ?? "Erro ao carregar cliente.");
     } finally {
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export default function ClienteDetalhe() {
     e.preventDefault();
 
     if (!placa.trim() || !modelo.trim()) {
-      alert("Placa e modelo são obrigatórios.");
+      toast.error("Placa e modelo são obrigatórios.");
       return;
     }
 
@@ -84,11 +85,12 @@ export default function ClienteDetalhe() {
         alimentacao: alimentacao.trim() || null,
       });
 
+      toast.success("Veículo cadastrado!");
       resetVeiculoForm();
       setShowCreateVeiculo(false);
       await load();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao criar veículo.");
+      toast.error(error?.response?.data?.message ?? "Erro ao criar veículo.");
     } finally {
       setCreatingVeiculo(false);
     }

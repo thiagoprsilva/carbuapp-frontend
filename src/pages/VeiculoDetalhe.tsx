@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { api } from "../services/api";
 
 type Cliente = {
@@ -107,7 +108,7 @@ export default function VeiculoDetalhe() {
       setRegistros(rRes.data);
       setOrcamentos(oRes.data);
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao carregar veículo.");
+      toast.error(error?.response?.data?.message ?? "Erro ao carregar veículo.");
     } finally {
       setLoading(false);
     }
@@ -119,14 +120,16 @@ export default function VeiculoDetalhe() {
   }, [veiculoId]);
 
   async function handlePdf(orcamentoId: number) {
+    const toastId = toast.loading("Gerando PDF...");
     try {
       const res = await api.get(`/orcamento/${orcamentoId}/pdf`, { responseType: "blob" });
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
       setTimeout(() => window.URL.revokeObjectURL(url), 5000);
+      toast.success("PDF aberto!", { id: toastId });
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao gerar PDF.");
+      toast.error(error?.response?.data?.message ?? "Erro ao gerar PDF.", { id: toastId });
     }
   }
 
@@ -137,9 +140,9 @@ export default function VeiculoDetalhe() {
   async function handleCreateRegistro(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!categoria.trim()) return alert("Selecione a categoria.");
-    if (!descricao.trim()) return alert("Descrição é obrigatória.");
-    if (!dataServico) return alert("Data do serviço é obrigatória.");
+    if (!categoria.trim()) { toast.error("Selecione a categoria."); return; }
+    if (!descricao.trim()) { toast.error("Descrição é obrigatória."); return; }
+    if (!dataServico) { toast.error("Data do serviço é obrigatória."); return; }
 
     setCreatingRegistro(true);
     try {
@@ -153,11 +156,12 @@ export default function VeiculoDetalhe() {
         observacoes: observacoes.trim() || null,
       });
 
+      toast.success("Registro técnico criado!");
       resetRegistroForm();
       setShowCreateRegistro(false);
       await load();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao criar registro técnico.");
+      toast.error(error?.response?.data?.message ?? "Erro ao criar registro técnico.");
     } finally {
       setCreatingRegistro(false);
     }
@@ -186,22 +190,23 @@ export default function VeiculoDetalhe() {
       }))
       .filter((it) => it.descricao.length > 0);
 
-    if (itensValidos.length === 0) return alert("Adicione pelo menos 1 item com descrição.");
+    if (itensValidos.length === 0) { toast.error("Adicione pelo menos 1 item com descrição."); return; }
 
     for (const it of itensValidos) {
-      if (it.qtd < 1) return alert("Qtd deve ser pelo menos 1.");
-      if (it.precoUnit < 0) return alert("Preço unitário não pode ser negativo.");
+      if (it.qtd < 1) { toast.error("Qtd deve ser pelo menos 1."); return; }
+      if (it.precoUnit < 0) { toast.error("Preço unitário não pode ser negativo."); return; }
     }
 
     setCreatingOrcamento(true);
     try {
       await api.post("/orcamento", { veiculoId, itens: itensValidos });
 
+      toast.success("Orçamento criado!");
       resetOrcamentoForm();
       setShowCreateOrcamento(false);
       await load();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao criar orçamento.");
+      toast.error(error?.response?.data?.message ?? "Erro ao criar orçamento.");
     } finally {
       setCreatingOrcamento(false);
     }

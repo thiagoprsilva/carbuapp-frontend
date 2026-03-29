@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { api } from "../services/api";
+import ConfirmModal from "../components/ConfirmModal";
 
 type Veiculo = {
   id: number;
@@ -51,6 +53,10 @@ export default function Registros() {
   const [editDescricao, setEditDescricao] = useState("");
   const [editDataServico, setEditDataServico] = useState("");
   const [editObservacoes, setEditObservacoes] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{
+    open: boolean;
+    id: number | null;
+  }>({ open: false, id: null });
 
   async function loadVeiculos() {
     const res = await api.get<Veiculo[]>("/veiculos");
@@ -79,8 +85,8 @@ export default function Registros() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!veiculoId) return alert("Selecione um veículo.");
-    if (!descricao.trim() || !dataServico.trim()) return alert("Descrição e data são obrigatórias.");
+    if (!veiculoId) { toast.error("Selecione um veículo."); return; }
+    if (!descricao.trim() || !dataServico.trim()) { toast.error("Descrição e data são obrigatórias."); return; }
 
     setCreating(true);
     try {
@@ -92,12 +98,13 @@ export default function Registros() {
         observacoes: observacoes.trim() || null,
       });
 
+      toast.success("Registro técnico criado!");
       setDescricao("");
       setObservacoes("");
       setDataServico("");
       await loadRegistros();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao criar registro técnico.");
+      toast.error(error?.response?.data?.message ?? "Erro ao criar registro técnico.");
     } finally {
       setCreating(false);
     }
@@ -122,8 +129,8 @@ export default function Registros() {
   }
 
   async function saveEdit(id: number) {
-    if (!editVeiculoId) return alert("Selecione um veículo.");
-    if (!editDescricao.trim() || !editDataServico.trim()) return alert("Descrição e data são obrigatórias.");
+    if (!editVeiculoId) { toast.error("Selecione um veículo."); return; }
+    if (!editDescricao.trim() || !editDataServico.trim()) { toast.error("Descrição e data são obrigatórias."); return; }
 
     try {
       await api.put(`/registroTecnico/${id}`, {
@@ -134,22 +141,29 @@ export default function Registros() {
         observacoes: editObservacoes.trim() || null,
       });
 
+      toast.success("Registro atualizado!");
       cancelEdit();
       await loadRegistros();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao editar registro técnico.");
+      toast.error(error?.response?.data?.message ?? "Erro ao editar registro técnico.");
     }
   }
 
-  async function handleDelete(id: number) {
-    const ok = confirm("Tem certeza que deseja remover este registro técnico?");
-    if (!ok) return;
+  function pedirConfirmacaoDelete(id: number) {
+    setConfirmDelete({ open: true, id });
+  }
+
+  async function confirmarDelete() {
+    const id = confirmDelete.id;
+    setConfirmDelete({ open: false, id: null });
+    if (!id) return;
 
     try {
       await api.delete(`/registroTecnico/${id}`);
+      toast.success("Registro removido.");
       await loadRegistros();
     } catch (error: any) {
-      alert(error?.response?.data?.message ?? "Erro ao remover registro técnico.");
+      toast.error(error?.response?.data?.message ?? "Erro ao remover registro técnico.");
     }
   }
 
@@ -157,6 +171,16 @@ export default function Registros() {
 
   return (
     <div>
+      <ConfirmModal
+        open={confirmDelete.open}
+        title="Remover registro técnico"
+        message="Tem certeza que deseja remover este registro técnico? Esta ação não pode ser desfeita."
+        confirmLabel="Remover"
+        danger
+        onConfirm={confirmarDelete}
+        onCancel={() => setConfirmDelete({ open: false, id: null })}
+      />
+
       <div className="page-header">
         <div>
           <h2 className="h2">Histórico Técnico</h2>
@@ -320,7 +344,7 @@ export default function Registros() {
                             <button onClick={() => startEdit(r)} className="btn btnBlue" type="button">
                               Editar
                             </button>
-                            <button onClick={() => handleDelete(r.id)} className="btn btnRed" type="button">
+                            <button onClick={() => pedirConfirmacaoDelete(r.id)} className="btn btnRed" type="button">
                               Excluir
                             </button>
                           </div>

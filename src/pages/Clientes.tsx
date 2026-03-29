@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { api } from "../services/api";
+import ConfirmModal from "../components/ConfirmModal";
 
 type Cliente = {
   id: number;
@@ -18,6 +20,11 @@ export default function Clientes() {
   const [editId, setEditId] = useState<number | null>(null);
   const [editNome, setEditNome] = useState("");
   const [editTelefone, setEditTelefone] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<{
+    open: boolean;
+    id: number | null;
+    nome: string;
+  }>({ open: false, id: null, nome: "" });
 
   async function loadClientes() {
     setLoadingList(true);
@@ -37,7 +44,7 @@ export default function Clientes() {
     e.preventDefault();
 
     if (!nome.trim()) {
-      alert("Informe o nome do cliente.");
+      toast.error("Informe o nome do cliente.");
       return;
     }
 
@@ -48,11 +55,12 @@ export default function Clientes() {
         telefone: telefone.trim() || undefined,
       });
 
+      toast.success("Cliente cadastrado!");
       setNome("");
       setTelefone("");
       await loadClientes();
     } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao criar cliente.");
+      toast.error(err?.response?.data?.message ?? "Erro ao criar cliente.");
     } finally {
       setCreating(false);
     }
@@ -72,7 +80,7 @@ export default function Clientes() {
 
   async function saveEdit(clienteId: number) {
     if (!editNome.trim()) {
-      alert("Nome não pode ficar vazio.");
+      toast.error("Nome não pode ficar vazio.");
       return;
     }
 
@@ -82,27 +90,44 @@ export default function Clientes() {
         telefone: editTelefone.trim() || null,
       });
 
+      toast.success("Cliente atualizado!");
       cancelEdit();
       await loadClientes();
     } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao atualizar cliente.");
+      toast.error(err?.response?.data?.message ?? "Erro ao atualizar cliente.");
     }
   }
 
-  async function handleDelete(clienteId: number, clienteNome: string) {
-    const ok = confirm(`Tem certeza que deseja remover o cliente "${clienteNome}"?`);
-    if (!ok) return;
+  function pedirConfirmacaoDelete(id: number, nomeCliente: string) {
+    setConfirmDelete({ open: true, id, nome: nomeCliente });
+  }
+
+  async function confirmarDelete() {
+    const id = confirmDelete.id;
+    setConfirmDelete({ open: false, id: null, nome: "" });
+    if (!id) return;
 
     try {
-      await api.delete(`/clientes/${clienteId}`);
+      await api.delete(`/clientes/${id}`);
+      toast.success("Cliente removido.");
       await loadClientes();
     } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao remover cliente.");
+      toast.error(err?.response?.data?.message ?? "Erro ao remover cliente.");
     }
   }
 
   return (
     <div>
+      <ConfirmModal
+        open={confirmDelete.open}
+        title="Remover cliente"
+        message={`Tem certeza que deseja remover o cliente "${confirmDelete.nome}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Remover"
+        danger
+        onConfirm={confirmarDelete}
+        onCancel={() => setConfirmDelete({ open: false, id: null, nome: "" })}
+      />
+
       <div className="page-header">
         <div>
           <h2 className="h2">Clientes</h2>
@@ -188,7 +213,7 @@ export default function Clientes() {
                                 Editar
                               </button>
 
-                              <button onClick={() => handleDelete(c.id, c.nome)} className="btn btnRed" type="button">
+                              <button onClick={() => pedirConfirmacaoDelete(c.id, c.nome)} className="btn btnRed" type="button">
                                 Excluir
                               </button>
                             </div>

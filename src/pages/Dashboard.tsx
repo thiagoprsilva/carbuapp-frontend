@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 
@@ -55,7 +56,7 @@ export default function Dashboard() {
       const res = await api.get<Summary>("/dashboard/summary");
       setSummary(res.data);
     } catch (err: any) {
-      alert(err?.response?.data?.message ?? "Erro ao carregar dashboard.");
+      toast.error(err?.response?.data?.message ?? "Erro ao carregar dashboard.");
       setSummary(null);
     } finally {
       setLoading(false);

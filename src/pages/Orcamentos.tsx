@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
+import GerarRegistroModal from "../components/GerarRegistroModal";
+import VeiculoRapidoModal from "../components/VeiculoRapidoModal";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 
@@ -43,6 +45,13 @@ type Orcamento = {
   veiculo?: Veiculo;
 };
 
+type RegistroHistorico = {
+  id: number;
+  categoria: string;
+  descricao: string;
+  dataServico: string;
+};
+
 // ─── helpers visuais ──────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
@@ -53,6 +62,7 @@ function formatDate(iso: string) {
 
 export default function Orcamentos() {
   // dados
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,12 +82,28 @@ export default function Orcamentos() {
   >([]);
   const [saving, setSaving] = useState(false);
 
+  // histórico do veículo selecionado
+  const [historico, setHistorico] = useState<RegistroHistorico[]>([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
+
   // modal de confirmação de exclusão
   const [confirmDelete, setConfirmDelete] = useState<{
     open: boolean;
     id: number | null;
     numero: number | null;
   }>({ open: false, id: null, numero: null });
+
+  // modal GerarRegistro
+  const [registroModal, setRegistroModal] = useState<{
+    open: boolean;
+    orcamentoId: number;
+    orcamentoNumero: number;
+    veiculoId: number;
+    descricaoInicial: string;
+  }>({ open: false, orcamentoId: 0, orcamentoNumero: 0, veiculoId: 0, descricaoInicial: "" });
+
+  // modal VeiculoRapido
+  const [veiculoRapidoOpen, setVeiculoRapidoOpen] = useState(false);
 
   // ─── subtotal calculado ────────────────────────────────────────────────────
   const subtotalDraft = useMemo(
@@ -105,6 +131,11 @@ export default function Orcamentos() {
   }, [orcamentos]);
 
   // ─── carga de dados ────────────────────────────────────────────────────────
+  async function loadClientes() {
+    const res = await api.get<Cliente[]>("/clientes");
+    setClientes(res.data);
+  }
+
   async function loadVeiculos() {
     const res = await api.get<Veiculo[]>("/veiculos");
     setVeiculos(res.data);
@@ -119,13 +150,24 @@ export default function Orcamentos() {
   async function refresh() {
     setLoading(true);
     try {
-      await Promise.all([loadVeiculos(), loadOrcamentos()]);
+      await Promise.all([loadClientes(), loadVeiculos(), loadOrcamentos()]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => { refresh(); }, []);
+
+  // ─── histórico do veículo ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!veiculoId) { setHistorico([]); return; }
+    setLoadingHistorico(true);
+    api
+      .get<RegistroHistorico[]>(`/registroTecnico?veiculoId=${veiculoId}&limit=3`)
+      .then((res) => setHistorico(res.data))
+      .catch(() => setHistorico([]))
+      .finally(() => setLoadingHistorico(false));
+  }, [veiculoId]);
 
   // ─── formulário ───────────────────────────────────────────────────────────
   function resetForm() {
@@ -254,7 +296,6 @@ export default function Orcamentos() {
   }
 
   // ─── gerar registro técnico ───────────────────────────────────────────────
-  // TODO Etapa 2: substituir por modal com formulário
   function buildDescricao(o: Orcamento) {
     const linhas = o.itens.map(
       (it) =>
@@ -263,21 +304,14 @@ export default function Orcamentos() {
     return `Registro gerado do Orçamento #${o.numero}\n` + linhas.join("\n");
   }
 
-  async function gerarRegistro(o: Orcamento) {
-    const toastId = toast.loading("Criando registro técnico...");
-    try {
-      await api.post("/registroTecnico", {
-        veiculoId: o.veiculoId,
-        categoria: "Manutenção",
-        descricao: buildDescricao(o),
-        dataServico: new Date().toISOString().split("T")[0],
-        observacoes: `Gerado a partir do Orçamento #${o.numero}`,
-        orcamentoId: o.id,
-      });
-      toast.success("Registro técnico criado!", { id: toastId });
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message ?? "Erro ao gerar registro.", { id: toastId });
-    }
+  function abrirGerarRegistro(o: Orcamento) {
+    setRegistroModal({
+      open: true,
+      orcamentoId: o.id,
+      orcamentoNumero: o.numero,
+      veiculoId: o.veiculoId,
+      descricaoInicial: buildDescricao(o),
+    });
   }
 
   // ─── render ───────────────────────────────────────────────────────────────
@@ -294,6 +328,40 @@ export default function Orcamentos() {
         danger
         onConfirm={confirmarDelete}
         onCancel={() => setConfirmDelete({ open: false, id: null, numero: null })}
+      />
+
+      {/* Modal de Gerar Registro Técnico */}
+      <GerarRegistroModal
+        open={registroModal.open}
+        orcamentoId={registroModal.orcamentoId}
+        orcamentoNumero={registroModal.orcamentoNumero}
+        veiculoId={registroModal.veiculoId}
+        descricaoInicial={registroModal.descricaoInicial}
+        onClose={() => setRegistroModal((prev) => ({ ...prev, open: false }))}
+        onSuccess={() => setRegistroModal((prev) => ({ ...prev, open: false }))}
+      />
+
+      {/* Modal de Cadastrar Veículo Rápido */}
+      <VeiculoRapidoModal
+        open={veiculoRapidoOpen}
+        clientes={clientes}
+        clienteIdInicial={
+          veiculoId
+            ? veiculos.find((v) => v.id === veiculoId)?.cliente?.id
+            : undefined
+        }
+        onClose={() => setVeiculoRapidoOpen(false)}
+        onSuccess={(novoVeiculo) => {
+          const veiculoCompleto: Veiculo = {
+            id: novoVeiculo.id,
+            placa: novoVeiculo.placa,
+            modelo: novoVeiculo.modelo,
+            cliente: novoVeiculo.cliente,
+          };
+          setVeiculos((prev) => [...prev, veiculoCompleto]);
+          setVeiculoId(novoVeiculo.id);
+          setVeiculoRapidoOpen(false);
+        }}
       />
 
       {/* Cabeçalho */}
@@ -336,23 +404,95 @@ export default function Orcamentos() {
         </div>
 
         {/* Seleção de veículo */}
-        <div className="inline-form" style={{ marginBottom: 12, alignItems: "center" }}>
+        <div className="inline-form" style={{ marginBottom: 8, alignItems: "center" }}>
           <span className="badge">Veículo</span>
           <div className="field-wide">
-            <select
-              className="select"
-              value={veiculoId}
-              onChange={(e) => setVeiculoId(Number(e.target.value))}
-            >
-              {veiculos.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.modelo} ({v.placa}) — {v.cliente?.nome ?? "Sem cliente"}
-                </option>
-              ))}
-            </select>
+            {veiculos.length === 0 ? (
+              <span style={{ fontSize: 14, opacity: .7 }}>Nenhum veículo cadastrado.</span>
+            ) : (
+              <select
+                className="select"
+                value={veiculoId}
+                onChange={(e) => setVeiculoId(Number(e.target.value))}
+              >
+                {veiculos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.modelo} ({v.placa}) — {v.cliente?.nome ?? "Sem cliente"}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
+          <button
+            type="button"
+            className="btn btnPrimary"
+            style={{ whiteSpace: "nowrap" }}
+            onClick={() => setVeiculoRapidoOpen(true)}
+            title="Cadastrar novo veículo sem sair da página"
+          >
+            + Veículo
+          </button>
           <span className="badge">Subtotal: R$ {subtotalDraft.toFixed(2)}</span>
         </div>
+
+        {/* Histórico do veículo selecionado */}
+        {veiculoId > 0 && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: "10px 14px",
+              background: "var(--bg)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              fontSize: 13,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 6, color: "var(--text-sub)" }}>
+              Últimos registros técnicos deste veículo
+            </div>
+            {loadingHistorico ? (
+              <span style={{ opacity: .6 }}>Carregando...</span>
+            ) : historico.length === 0 ? (
+              <span style={{ opacity: .6 }}>Nenhum registro técnico encontrado.</span>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {historico.map((r) => (
+                  <div
+                    key={r.id}
+                    style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}
+                  >
+                    <span
+                      style={{
+                        background: "var(--primary-light, #dbeafe)",
+                        color: "var(--primary, #1d4ed8)",
+                        borderRadius: 6,
+                        padding: "1px 8px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {r.categoria}
+                    </span>
+                    <span style={{ color: "var(--text-sub)", minWidth: 70 }}>
+                      {formatDate(r.dataServico)}
+                    </span>
+                    <span
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 340,
+                        opacity: .85,
+                      }}
+                    >
+                      {r.descricao.split("\n")[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Linha de item */}
         <div className="inline-form" style={{ marginBottom: 12 }}>
@@ -431,7 +571,7 @@ export default function Orcamentos() {
               {saving ? "Salvando..." : "Salvar alterações"}
             </button>
           ) : (
-            <button onClick={handleCreate} className="btn btnPrimary" type="button" disabled={saving}>
+            <button onClick={handleCreate} className="btn btnPrimary" type="button" disabled={saving || veiculos.length === 0}>
               {saving ? "Criando..." : "Criar orçamento"}
             </button>
           )}
@@ -507,7 +647,7 @@ export default function Orcamentos() {
                           PDF
                         </button>
                         <button
-                          onClick={() => gerarRegistro(o)}
+                          onClick={() => abrirGerarRegistro(o)}
                           type="button"
                           className="btn"
                           style={{ background: "#16a34a", borderColor: "#16a34a", color: "#fff" }}
