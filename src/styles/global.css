@@ -289,6 +289,22 @@ a{ color: var(--blue); }
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  /* scrollbar visível no mobile */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.table-scroll::-webkit-scrollbar{
+  height: 4px;
+}
+
+.table-scroll::-webkit-scrollbar-track{
+  background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb{
+  background: #cbd5e1;
+  border-radius: 999px;
 }
 
 .table-scroll .table{
@@ -547,6 +563,7 @@ a{ color: var(--blue); }
 
 .btn{
   padding: 10px 14px;
+  min-height: 44px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: #fff;
@@ -597,6 +614,7 @@ a{ color: var(--blue); }
 
 .input, .select{
   padding: 10px;
+  min-height: 44px;
   border: 1px solid #cfd5df;
   border-radius: 10px;
   background: #fff;
@@ -787,6 +805,7 @@ a{ color: var(--blue); }
 
 .status-filter-btn {
   padding: 6px 14px;
+  min-height: 44px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: #fff;
@@ -823,7 +842,38 @@ a{ color: var(--blue); }
     padding: 68px 16px 16px;
   }
 
-  .mobile-menu-btn   { display: flex; }
-  .sidebar-close-btn { display: block; }
-  .sidebar-overlay   { display: block; }
+  .mobile-menu-btn {
+    display: flex;
+    width: 44px;
+    height: 44px;
+  }
+
+  .sidebar-close-btn {
+    display: block;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar-overlay { display: block; }
+
+  /* Campos de formulário colapsam em 1 coluna no tablet também */
+  .field-wide,
+  .field-medium,
+  .field-compact {
+    flex-basis: 100%;
+  }
+
+  /* Grupos de ação ocupam largura total no tablet */
+  .page-header-actions,
+  .action-group {
+    width: 100%;
+  }
+
+  .page-header-actions .btn,
+  .action-group .btn {
+    flex: 1 1 120px;
+  }
 }
