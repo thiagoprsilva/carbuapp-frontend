@@ -367,7 +367,7 @@ export default function VeiculoDetalhe() {
           <div className="sub">Nenhum registro técnico encontrado.</div>
         ) : (
           <div className="table-scroll">
-            <table className="table table-min-md">
+            <table className="table table-min-md table-cards">
               <thead>
                 <tr>
                   <th>Data</th>
@@ -379,10 +379,10 @@ export default function VeiculoDetalhe() {
               <tbody>
                 {registros.map((r) => (
                   <tr key={r.id}>
-                    <td>{formatPtBr(r.dataServico)}</td>
-                    <td>{r.categoria}</td>
-                    <td>{r.descricao}</td>
-                    <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                    <td data-label="Data">{formatPtBr(r.dataServico)}</td>
+                    <td data-label="Categoria">{r.categoria}</td>
+                    <td data-label="Descrição">{r.descricao}</td>
+                    <td data-label="Orçamento">{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -401,7 +401,7 @@ export default function VeiculoDetalhe() {
           <div className="sub">Nenhum orçamento encontrado.</div>
         ) : (
           <div className="table-scroll">
-            <table className="table table-min-md">
+            <table className="table table-min-md table-cards">
               <thead>
                 <tr>
                   <th>Número</th>
@@ -413,9 +413,9 @@ export default function VeiculoDetalhe() {
               <tbody>
                 {orcamentos.map((o) => (
                   <tr key={o.id}>
-                    <td>#{o.numero}</td>
-                    <td>{formatPtBr(o.createdAt)}</td>
-                    <td>R$ {Number(o.total).toFixed(2)}</td>
+                    <td data-label="Número">#{o.numero}</td>
+                    <td data-label="Data">{formatPtBr(o.createdAt)}</td>
+                    <td data-label="Total">R$ {Number(o.total).toFixed(2)}</td>
                     <td>
                       <div className="action-group">
                         <button className="btn btnPrimary" onClick={() => handlePdf(o.id)} type="button">

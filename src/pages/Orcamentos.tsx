@@ -588,7 +588,7 @@ export default function Orcamentos() {
           </div>
         ) : (
           <div className="table-scroll">
-            <table className="table table-min-xl">
+            <table className="table table-min-xl table-cards">
               <thead>
                 <tr>
                   <th>#</th>
@@ -603,20 +603,20 @@ export default function Orcamentos() {
               <tbody>
                 {orcamentosFiltrados.map((o) => (
                   <tr key={o.id}>
-                    <td style={{ fontWeight: 900 }}>#{o.numero}</td>
-                    <td>{o.veiculo?.cliente?.nome ?? "—"}</td>
-                    <td>
+                    <td data-label="#" style={{ fontWeight: 900 }}>#{o.numero}</td>
+                    <td data-label="Cliente">{o.veiculo?.cliente?.nome ?? "—"}</td>
+                    <td data-label="Veículo">
                       {o.veiculo
                         ? `${o.veiculo.modelo} (${o.veiculo.placa})`
                         : `Veículo #${o.veiculoId}`}
                     </td>
-                    <td style={{ fontWeight: 700 }}>
+                    <td data-label="Total" style={{ fontWeight: 700 }}>
                       R$ {Number(o.total).toFixed(2)}
                     </td>
-                    <td>{formatDate(o.createdAt)}</td>
+                    <td data-label="Data">{formatDate(o.createdAt)}</td>
 
                     {/* Status — dropdown colorido inline */}
-                    <td>
+                    <td data-label="Status">
                       <select
                         className={`status-select status-${o.status}`}
                         value={o.status}

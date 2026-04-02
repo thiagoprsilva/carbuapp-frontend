@@ -141,7 +141,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="table-scroll" style={{ marginTop: 10 }}>
-                  <table className="table table-min-md">
+                  <table className="table table-min-md table-cards">
                     <thead>
                       <tr>
                         <th>Data</th>
@@ -153,16 +153,16 @@ export default function Dashboard() {
                     <tbody>
                       {summary.recentes.registros.map((r) => (
                         <tr key={r.id}>
-                          <td>{formatPtBr(r.dataServico)}</td>
-                          <td>
+                          <td data-label="Data">{formatPtBr(r.dataServico)}</td>
+                          <td data-label="Veículo">
                             <Link to={`/veiculos/${r.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
                               {r.veiculo.modelo} ({r.veiculo.placa})
                             </Link>
                           </td>
-                          <td>
+                          <td data-label="Categoria">
                             <span className="badge">{r.categoria}</span>
                           </td>
-                          <td>{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                          <td data-label="Orçamento">{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="table-scroll" style={{ marginTop: 10 }}>
-                  <table className="table table-min-md">
+                  <table className="table table-min-md table-cards">
                     <thead>
                       <tr>
                         <th>Número</th>
@@ -197,14 +197,14 @@ export default function Dashboard() {
                     <tbody>
                       {summary.recentes.orcamentos.map((o) => (
                         <tr key={o.id}>
-                          <td style={{ fontWeight: 900 }}>#{o.numero}</td>
-                          <td>{formatPtBr(o.createdAt)}</td>
-                          <td>
+                          <td data-label="#" style={{ fontWeight: 900 }}>#{o.numero}</td>
+                          <td data-label="Data">{formatPtBr(o.createdAt)}</td>
+                          <td data-label="Veículo">
                             <Link to={`/veiculos/${o.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
                               {o.veiculo.modelo} ({o.veiculo.placa})
                             </Link>
                           </td>
-                          <td>R$ {Number(o.total).toFixed(2)}</td>
+                          <td data-label="Total">R$ {Number(o.total).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>

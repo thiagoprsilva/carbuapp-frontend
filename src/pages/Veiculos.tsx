@@ -272,7 +272,7 @@ export default function Veiculos() {
       ) : (
         <div className="card">
           <div className="table-scroll">
-            <table className="table table-min-xl">
+            <table className="table table-min-xl table-cards">
               <thead>
                 <tr>
                   <th>Cliente</th>
@@ -287,7 +287,7 @@ export default function Veiculos() {
 
               <tbody>
                 {veiculos.length === 0 ? (
-                  <tr>
+                  <tr className="row-empty">
                     <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
                       Nenhum veículo cadastrado.
                     </td>
@@ -298,7 +298,7 @@ export default function Veiculos() {
 
                     return (
                       <tr key={v.id}>
-                        <td>
+                        <td data-label="Cliente">
                           {isEditing ? (
                             <select className="select" value={editClienteId} onChange={(e) => setEditClienteId(Number(e.target.value))}>
                               {clientes.map((c) => (
@@ -312,7 +312,7 @@ export default function Veiculos() {
                           )}
                         </td>
 
-                        <td>
+                        <td data-label="Placa">
                           {isEditing ? (
                             <input
                               className="input"
@@ -324,7 +324,7 @@ export default function Veiculos() {
                           )}
                         </td>
 
-                        <td>
+                        <td data-label="Modelo">
                           {isEditing ? (
                             <input className="input" value={editModelo} onChange={(e) => setEditModelo(e.target.value)} />
                           ) : (
@@ -334,15 +334,15 @@ export default function Veiculos() {
                           )}
                         </td>
 
-                        <td>
+                        <td data-label="Ano">
                           {isEditing ? <input className="input" value={editAno} onChange={(e) => setEditAno(e.target.value)} /> : v.ano ?? "-"}
                         </td>
 
-                        <td>
+                        <td data-label="Motor">
                           {isEditing ? <input className="input" value={editMotor} onChange={(e) => setEditMotor(e.target.value)} /> : v.motor ?? "-"}
                         </td>
 
-                        <td>
+                        <td data-label="Alimentação">
                           {isEditing ? (
                             <select className="select" value={editAlimentacao} onChange={(e) => setEditAlimentacao(e.target.value)}>
                               <option value="">Selecione a alimentação</option>

@@ -555,6 +555,65 @@ a{ color: var(--blue); }
     border-radius: 16px;
     margin-top: 52px;
   }
+
+  /* ── Tabelas → cards empilhados no mobile ── */
+  .table-cards{
+    display: block;
+    width: 100%;
+    min-width: unset !important;
+  }
+  .table-cards thead{ display: none; }
+  .table-cards tbody{ display: block; }
+
+  .table-cards tbody tr{
+    display: flex;
+    flex-direction: column;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  /* linha de "estado vazio" fica normal */
+  .table-cards tbody tr.row-empty{
+    display: table-row;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .table-cards tbody td{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    gap: 8px;
+    font-size: 0.875rem;
+  }
+  .table-cards tbody td:last-child{
+    border-bottom: none;
+    padding-top: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .table-cards tbody td::before{
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+    min-width: 90px;
+  }
+  .table-cards tbody td:last-child::before{ display: none; }
+  .table-cards tbody td[data-label=""]::before{ display: none; }
 }
 
 /* =========================

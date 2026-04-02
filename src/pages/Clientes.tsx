@@ -156,7 +156,7 @@ export default function Clientes() {
       ) : (
         <div className="card">
           <div className="table-scroll">
-            <table className="table table-min-md">
+            <table className="table table-min-md table-cards">
               <thead>
                 <tr>
                   <th>Nome</th>
@@ -167,7 +167,7 @@ export default function Clientes() {
 
               <tbody>
                 {clientes.length === 0 ? (
-                  <tr>
+                  <tr className="row-empty">
                     <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
                       Nenhum cliente cadastrado.
                     </td>
@@ -178,7 +178,7 @@ export default function Clientes() {
 
                     return (
                       <tr key={c.id}>
-                        <td>
+                        <td data-label="Nome">
                           {isEditing ? (
                             <input className="input" value={editNome} onChange={(e) => setEditNome(e.target.value)} />
                           ) : (
@@ -188,7 +188,7 @@ export default function Clientes() {
                           )}
                         </td>
 
-                        <td>
+                        <td data-label="Telefone">
                           {isEditing ? (
                             <input className="input" value={editTelefone} onChange={(e) => setEditTelefone(e.target.value)} />
                           ) : (

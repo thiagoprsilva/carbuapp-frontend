@@ -250,7 +250,7 @@ export default function Registros() {
 
       <div className="card">
         <div className="table-scroll">
-          <table className="table table-min-xl">
+          <table className="table table-min-xl table-cards">
             <thead>
               <tr>
                 <th>Veículo</th>
@@ -264,7 +264,7 @@ export default function Registros() {
 
             <tbody>
               {registros.length === 0 ? (
-                <tr>
+                <tr className="row-empty">
                   <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
                     Nenhum registro cadastrado.
                   </td>
@@ -275,7 +275,7 @@ export default function Registros() {
 
                   return (
                     <tr key={r.id}>
-                      <td>
+                      <td data-label="Veículo">
                         {editing ? (
                           <select className="select" value={editVeiculoId} onChange={(e) => setEditVeiculoId(Number(e.target.value))}>
                             {veiculos.map((v) => (
@@ -291,7 +291,7 @@ export default function Registros() {
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Categoria">
                         {editing ? (
                           <select className="select" value={editCategoria} onChange={(e) => setEditCategoria(e.target.value)}>
                             {categoriasFixas.map((cat) => (
@@ -305,7 +305,7 @@ export default function Registros() {
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Descrição">
                         {editing ? (
                           <input className="input" value={editDescricao} onChange={(e) => setEditDescricao(e.target.value)} />
                         ) : (
@@ -313,7 +313,7 @@ export default function Registros() {
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Data">
                         {editing ? (
                           <input className="input" type="date" value={editDataServico} onChange={(e) => setEditDataServico(e.target.value)} />
                         ) : (
@@ -321,7 +321,7 @@ export default function Registros() {
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Obs">
                         {editing ? (
                           <input className="input" value={editObservacoes} onChange={(e) => setEditObservacoes(e.target.value)} />
                         ) : (

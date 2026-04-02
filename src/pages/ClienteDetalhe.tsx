@@ -179,7 +179,7 @@ export default function ClienteDetalhe() {
           <div className="sub">Nenhum veículo cadastrado.</div>
         ) : (
           <div className="table-scroll">
-            <table className="table table-min-md">
+            <table className="table table-min-md table-cards">
               <thead>
                 <tr>
                   <th>Veículo</th>
@@ -191,14 +191,14 @@ export default function ClienteDetalhe() {
               <tbody>
                 {veiculos.map((v) => (
                   <tr key={v.id}>
-                    <td>
+                    <td data-label="Veículo">
                       <Link to={`/veiculos/${v.id}`} style={{ textDecoration: "none", fontWeight: 900 }}>
                         {v.modelo} ({v.placa})
                       </Link>
                     </td>
-                    <td>{v.ano ?? "-"}</td>
-                    <td>{v.motor ?? "-"}</td>
-                    <td>{v.alimentacao ?? "-"}</td>
+                    <td data-label="Ano">{v.ano ?? "-"}</td>
+                    <td data-label="Motor">{v.motor ?? "-"}</td>
+                    <td data-label="Alimentação">{v.alimentacao ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
