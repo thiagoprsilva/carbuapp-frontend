@@ -10,47 +10,36 @@ type Oficina = {
   responsavel: string;
 };
 
-type CredencialExemplo = {
-  email: string;
-  senha: string;
-};
-
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isSuperAdmin, user } = useAuth();
   const navigate = useNavigate();
 
   const [oficinas, setOficinas] = useState<Oficina[]>([]);
-  const [oficinaId, setOficinaId] = useState<number>(1);
+  const [oficinaId, setOficinaId] = useState<number | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [modoSuperAdmin, setModoSuperAdmin] = useState(false);
+
+  // Redireciona se já estiver logado
+  useEffect(() => {
+    if (user) {
+      navigate(isSuperAdmin ? "/superadmin" : "/", { replace: true });
+    }
+  }, [user]);
 
   useEffect(() => {
-    api
-      .get<Oficina[]>("/public/oficinas")
-      .then((res) => {
-        setOficinas(res.data);
-        if (res.data.length > 0) setOficinaId(res.data[0].id);
-      })
-      .catch(() => setError("Não foi possível carregar as oficinas."));
-  }, []);
-
-  const credenciaisPorOficina: Record<number, CredencialExemplo> = {
-    1: {
-      email: "admin@commenale.local",
-      senha: "admin123",
-    },
-    2: {
-      email: "admin@apocalypse.local",
-      senha: "admin123",
-    },
-  };
-
-  const credencialAtual = credenciaisPorOficina[oficinaId] ?? {
-    email: "Digite seu e-mail",
-    senha: "Digite sua senha",
-  };
+    if (!modoSuperAdmin) {
+      api
+        .get<Oficina[]>("/public/oficinas")
+        .then((res) => {
+          setOficinas(res.data);
+          if (res.data.length > 0) setOficinaId(res.data[0].id);
+        })
+        .catch(() => setError("Não foi possível carregar as oficinas."));
+    }
+  }, [modoSuperAdmin]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,14 +47,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(email, senha, oficinaId);
-      navigate("/", { replace: true });
+      await login(email, senha, modoSuperAdmin ? undefined : oficinaId);
+      // Redirecionamento feito pelo useEffect acima após user atualizar
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        const message =
-          (err.response?.data as { message?: string } | undefined)?.message ??
-          "Falha no login.";
-        setError(message);
+        setError(
+          (err.response?.data as any)?.message ?? "Falha no login."
+        );
       } else if (err instanceof Error) {
         setError(err.message || "Falha no login.");
       } else {
@@ -79,33 +67,61 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
+        {/* Logo sempre CarbuApp na tela de login */}
         <img src="/carbuapplogo.png" alt="CarbuApp" className="auth-logo" />
-
         <h1 className="auth-title">CarbuApp</h1>
         <p className="auth-subtitle">Sistema para Oficinas Automotivas</p>
+
+        {/* Toggle Superadmin */}
+        <div style={{ marginBottom: 16, textAlign: "center" }}>
+          <button
+            type="button"
+            className="btn"
+            style={{ fontSize: "0.78rem", padding: "4px 12px", minHeight: "auto" }}
+            onClick={() => {
+              setModoSuperAdmin((v) => !v);
+              setError(null);
+              setEmail("");
+              setSenha("");
+            }}
+          >
+            {modoSuperAdmin ? "← Voltar ao login da oficina" : "Acesso Super Admin"}
+          </button>
+        </div>
+
         <p className="sub" style={{ marginTop: 0, marginBottom: 18 }}>
-          Escolha a oficina e faça login
+          {modoSuperAdmin
+            ? "Login de administrador global"
+            : "Escolha a oficina e faça login"}
         </p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <label className="form-label">
-            Oficina
-            <select className="select" value={oficinaId} onChange={(e) => setOficinaId(Number(e.target.value))}>
-              {oficinas.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.nome} - {o.responsavel}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!modoSuperAdmin && (
+            <label className="form-label">
+              Oficina
+              <select
+                className="select"
+                value={oficinaId}
+                onChange={(e) => setOficinaId(Number(e.target.value))}
+              >
+                {oficinas.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.nome} — {o.responsavel}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="form-label">
             E-mail
             <input
               className="input"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={credencialAtual.email}
+              placeholder="seu@email.com"
+              autoComplete="email"
             />
           </label>
 
@@ -116,7 +132,8 @@ export default function Login() {
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder={credencialAtual.senha}
+              placeholder="••••••••"
+              autoComplete="current-password"
             />
           </label>
 

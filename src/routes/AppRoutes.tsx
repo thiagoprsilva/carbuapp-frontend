@@ -1,17 +1,28 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import { PrivateRoute } from "./PrivateRoute";
 import Layout from "../components/Layout";
+import { PrivateRoute } from "./PrivateRoute";
 
 import Clientes from "../pages/Clientes";
+import ClienteDetalhe from "../pages/ClienteDetalhe";
 import Veiculos from "../pages/Veiculos";
+import VeiculoDetalhe from "../pages/VeiculoDetalhe";
 import Registros from "../pages/Registros";
 import Orcamentos from "../pages/Orcamentos";
+import Admin from "../pages/Admin";
+import Superadmin from "../pages/Superadmin";
+import SuperadminOficina from "../pages/SuperadminOficina";
+import SuperadminUsuarios from "../pages/SuperadminUsuarios";
 
-import ClienteDetalhe from "../pages/ClienteDetalhe";
-import VeiculoDetalhe from "../pages/VeiculoDetalhe";
+// Redireciona superadmin para /superadmin e demais para /
+function HomeRedirect() {
+  const { isSuperAdmin, selectedOficina } = useAuth();
+  if (isSuperAdmin && !selectedOficina) return <Navigate to="/superadmin" replace />;
+  return <Dashboard />;
+}
 
 export function AppRoutes() {
   return (
@@ -26,16 +37,52 @@ export function AppRoutes() {
             </PrivateRoute>
           }
         >
-          <Route path="/" element={<Dashboard />} />
+          {/* Rota raiz — redireciona superadmin para painel global */}
+          <Route path="/" element={<HomeRedirect />} />
 
+          {/* Rotas normais de operação (mecânico / admin / superadmin dentro de oficina) */}
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/clientes/:id" element={<ClienteDetalhe />} />
-
           <Route path="/veiculos" element={<Veiculos />} />
           <Route path="/veiculos/:id" element={<VeiculoDetalhe />} />
-
           <Route path="/registros" element={<Registros />} />
           <Route path="/orcamentos" element={<Orcamentos />} />
+
+          {/* Administração da oficina (admin + superadmin) */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute requiredRole="ADMIN">
+                <Admin />
+              </PrivateRoute>
+            }
+          />
+
+          {/* Painel global superadmin */}
+          <Route
+            path="/superadmin"
+            element={
+              <PrivateRoute requiredRole="SUPERADMIN">
+                <Superadmin />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/superadmin/oficinas/:id"
+            element={
+              <PrivateRoute requiredRole="SUPERADMIN">
+                <SuperadminOficina />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/usuarios"
+            element={
+              <PrivateRoute requiredRole="SUPERADMIN">
+                <SuperadminUsuarios />
+              </PrivateRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>
