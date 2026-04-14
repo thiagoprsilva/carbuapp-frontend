@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,46 +13,40 @@ type Usuario = {
   email: string;
   role: string;
   ativo: boolean;
-  oficinaId: number;
+  oficinaId: number | null;
 };
 
 const ROLES = ["ADMIN", "MECANICO"];
 
 export default function Admin() {
-  const { user, oficinaAtiva, refreshOficina, isSuperAdmin } = useAuth();
-  const oficinaId = isSuperAdmin
-    ? (officinaAtiva?.id ?? user?.oficinaId)
-    : user?.oficinaId;
+  const { user, oficinaAtiva, refreshOficina, isSuperAdmin, selectedOficina } = useAuth();
 
-  // ─── Usuários ───────────────────────────────────────────────────────────────
+  // oficinaId: usa selectedOficina para superadmin, user.oficinaId para admin normal
+  const oficinaId = isSuperAdmin
+    ? (selectedOficina?.id ?? null)
+    : (user?.oficinaId ?? null);
+
+  // ─── Todos os hooks primeiro (Rules of Hooks) ────────────────────────────────
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loadingUsuarios, setLoadingUsuarios] = useState(true);
-
-  // Formulário novo usuário
   const [showForm, setShowForm] = useState(false);
   const [novoNome, setNovoNome] = useState("");
   const [novoEmail, setNovoEmail] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [novoRole, setNovoRole] = useState("MECANICO");
   const [savingUsuario, setSavingUsuario] = useState(false);
-
-  // Edição inline
   const [editId, setEditId] = useState<number | null>(null);
   const [editNome, setEditNome] = useState("");
   const [editRole, setEditRole] = useState("");
-
-  // Reset de senha
   const [resetId, setResetId] = useState<number | null>(null);
   const [novaSenhaReset, setNovaSenhaReset] = useState("");
-
-  // Confirm modal
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMsg, setConfirmMsg] = useState("");
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
-
-  // ─── Logo ────────────────────────────────────────────────────────────────────
+  // Inicialização correta: (() => () => {}) retorna função vazia como estado inicial
+  const [confirmAction, setConfirmAction] = useState<() => void>(() => () => {});
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
   const logoUrl = oficinaAtiva?.logoUrl
     ? `${API_URL}/uploads/${oficinaAtiva.logoUrl}?t=${Date.now()}`
     : null;
@@ -59,8 +54,11 @@ export default function Admin() {
   async function carregarUsuarios() {
     try {
       setLoadingUsuarios(true);
-      const { data } = await api.get<Usuario[]>("/usuarios");
-      setUsuarios(data);
+      // Filtra pela oficina atual — evita receber todos os usuários do sistema
+      const url = oficinaId ? `/usuarios?oficinaId=${oficinaId}` : "/usuarios";
+      const { data } = await api.get<any[]>(url);
+      // Remove superadmins da lista (não devem aparecer no painel de admin)
+      setUsuarios((data as any[]).filter((u: any) => u.role !== "SUPERADMIN"));
     } catch {
       toast.error("Erro ao carregar usuários.");
     } finally {
@@ -69,6 +67,12 @@ export default function Admin() {
   }
 
   useEffect(() => { carregarUsuarios(); }, []);
+
+  // ─── Guard: superadmin sem oficina selecionada vai para o painel global ───────
+  // (após os hooks, conforme Rules of Hooks)
+  if (isSuperAdmin && !selectedOficina) {
+    return <Navigate to="/superadmin" replace />;
+  }
 
   // ─── Logo: upload ────────────────────────────────────────────────────────────
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -84,7 +88,6 @@ export default function Admin() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Logo atualizado com sucesso!");
-      // Atualiza a oficina no contexto para refletir na sidebar imediatamente
       if (oficinaAtiva) {
         refreshOficina({ ...oficinaAtiva, logoUrl: data.logoUrl });
       }
@@ -235,7 +238,6 @@ export default function Admin() {
           </button>
         </div>
 
-        {/* Formulário novo usuário */}
         {showForm && (
           <form onSubmit={handleCriarUsuario} className="card" style={{ marginBottom: 16, background: "var(--bg)" }}>
             <div className="form-row">
