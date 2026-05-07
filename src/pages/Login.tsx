@@ -25,7 +25,7 @@ export default function Login() {
   // Redireciona se já estiver logado
   useEffect(() => {
     if (user) {
-      navigate(isSuperAdmin ? "/superadmin" : "/", { replace: true });
+      navigate(isSuperAdmin ? "/superadmin" : "/app", { replace: true });
     }
   }, [user]);
 

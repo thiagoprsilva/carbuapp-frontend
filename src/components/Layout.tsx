@@ -13,11 +13,11 @@ export default function Layout() {
 
   function handleLogout() {
     logout();
-    navigate("/login");
+    navigate("/");
   }
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
+    if (path === "/app") return location.pathname === "/app";
     return location.pathname.startsWith(path);
   };
 
@@ -97,7 +97,7 @@ export default function Layout() {
           ) : (
             /* Menu normal (admin / mecânico / superadmin dentro de uma oficina) */
             <>
-              <Link className={`nav-link ${isActive("/") ? "active" : ""}`} to="/" onClick={handleMobileNavigate}>
+              <Link className={`nav-link ${isActive("/app") ? "active" : ""}`} to="/app" onClick={handleMobileNavigate}>
                 Dashboard
               </Link>
               <Link className={`nav-link ${isActive("/clientes") ? "active" : ""}`} to="/clientes" onClick={handleMobileNavigate}>

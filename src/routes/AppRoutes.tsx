@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Layout from "../components/Layout";
@@ -17,7 +18,7 @@ import Superadmin from "../pages/Superadmin";
 import SuperadminOficina from "../pages/SuperadminOficina";
 import SuperadminUsuarios from "../pages/SuperadminUsuarios";
 
-// Redireciona superadmin para /superadmin e demais para /
+// Redireciona superadmin para /superadmin e demais para /app
 function HomeRedirect() {
   const { isSuperAdmin, selectedOficina } = useAuth();
   if (isSuperAdmin && !selectedOficina) return <Navigate to="/superadmin" replace />;
@@ -28,6 +29,8 @@ export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing page — sempre pública */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
 
         <Route
@@ -37,8 +40,8 @@ export function AppRoutes() {
             </PrivateRoute>
           }
         >
-          {/* Rota raiz — redireciona superadmin para painel global */}
-          <Route path="/" element={<HomeRedirect />} />
+          {/* /app é o home após login */}
+          <Route path="/app" element={<HomeRedirect />} />
 
           {/* Rotas normais de operação (mecânico / admin / superadmin dentro de oficina) */}
           <Route path="/clientes" element={<Clientes />} />
