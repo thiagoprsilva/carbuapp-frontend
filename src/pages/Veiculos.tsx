@@ -40,6 +40,8 @@ export default function Veiculos() {
   const [ano, setAno] = useState("");
   const [motor, setMotor] = useState("");
   const [alimentacao, setAlimentacao] = useState("");
+  const [placaError, setPlacaError] = useState("");
+  const [modeloError, setModeloError] = useState("");
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editClienteId, setEditClienteId] = useState<number>(0);
@@ -87,10 +89,11 @@ export default function Veiculos() {
       toast.error("Selecione um cliente.");
       return;
     }
-    if (!placa.trim() || !modelo.trim()) {
-      toast.error("Placa e modelo são obrigatórios.");
-      return;
-    }
+
+    let hasError = false;
+    if (!placa.trim()) { setPlacaError("Placa é obrigatória."); hasError = true; } else setPlacaError("");
+    if (!modelo.trim()) { setModeloError("Modelo é obrigatório."); hasError = true; } else setModeloError("");
+    if (hasError) return;
 
     setCreating(true);
     try {
@@ -224,22 +227,24 @@ export default function Veiculos() {
             </select>
           </div>
 
-          <div className="field-medium">
+          <div className="field-wrap field-medium">
             <input
-              className="input"
-              placeholder="Placa (ex: ABC1D23)"
+              className={`input ${placaError ? "input-error" : ""}`}
+              placeholder="Placa (ex: ABC1D23) *"
               value={placa}
-              onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+              onChange={(e) => { setPlaca(e.target.value.toUpperCase()); if (placaError) setPlacaError(""); }}
             />
+            {placaError && <span className="field-error">{placaError}</span>}
           </div>
 
-          <div className="field-wide">
+          <div className="field-wrap field-wide">
             <input
-              className="input"
-              placeholder="Modelo (ex: Gol 1988)"
+              className={`input ${modeloError ? "input-error" : ""}`}
+              placeholder="Modelo (ex: Gol 1988) *"
               value={modelo}
-              onChange={(e) => setModelo(e.target.value)}
+              onChange={(e) => { setModelo(e.target.value); if (modeloError) setModeloError(""); }}
             />
+            {modeloError && <span className="field-error">{modeloError}</span>}
           </div>
 
           <div className="field-compact">
@@ -261,7 +266,7 @@ export default function Veiculos() {
             </select>
           </div>
 
-          <button type="submit" disabled={creating || clientes.length === 0} className="btn btnPrimary">
+          <button type="submit" disabled={creating || clientes.length === 0 || !placa.trim() || !modelo.trim()} className="btn btnPrimary">
             {creating ? "Salvando..." : "Novo Veículo"}
           </button>
         </form>
@@ -288,8 +293,17 @@ export default function Veiculos() {
               <tbody>
                 {veiculos.length === 0 ? (
                   <tr className="row-empty">
-                    <td colSpan={7} style={{ padding: 12, opacity: 0.7 }}>
-                      Nenhum veículo cadastrado.
+                    <td colSpan={7} style={{ textAlign: "center", padding: "2rem 1rem" }}>
+                      <div style={{ opacity: .5, fontSize: 14, marginBottom: 12 }}>
+                        Nenhum veículo cadastrado ainda.
+                      </div>
+                      <button
+                        className="btn btnPrimary"
+                        type="button"
+                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                      >
+                        + Cadastrar primeiro veículo
+                      </button>
                     </td>
                   </tr>
                 ) : (

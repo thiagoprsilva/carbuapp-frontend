@@ -436,6 +436,47 @@ a{ color: var(--primary); }
   font-size: 14px;
 }
 
+/* validação inline de formulários */
+.field-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.field-error{
+  color: #f87171;
+  font-size: 12px;
+  padding-left: 2px;
+}
+.input.input-error,
+.select.input-error{
+  border-color: #f87171;
+  outline-color: #f87171;
+}
+
+/* dashboard stat cards */
+.card-stat{
+  display: flex;
+  flex-direction: column;
+  transition: border-color .15s, background .15s;
+}
+.card-stat:hover{
+  border-color: var(--primary);
+  background: #17171f;
+}
+.stat-link{
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+}
+.stat-cta{
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--blue);
+  font-weight: 600;
+}
+
 /* responsivo */
 @media (max-width: 1100px){
   .grid4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }

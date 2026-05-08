@@ -45,6 +45,8 @@ export default function Registros() {
   const [descricao, setDescricao] = useState("");
   const [dataServico, setDataServico] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [descricaoError, setDescricaoError] = useState("");
+  const [dataError, setDataError] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -86,7 +88,11 @@ export default function Registros() {
     e.preventDefault();
 
     if (!veiculoId) { toast.error("Selecione um veículo."); return; }
-    if (!descricao.trim() || !dataServico.trim()) { toast.error("Descrição e data são obrigatórias."); return; }
+
+    let hasError = false;
+    if (!descricao.trim()) { setDescricaoError("Descrição é obrigatória."); hasError = true; } else setDescricaoError("");
+    if (!dataServico.trim()) { setDataError("Data é obrigatória."); hasError = true; } else setDataError("");
+    if (hasError) return;
 
     setCreating(true);
     try {
@@ -220,17 +226,24 @@ export default function Registros() {
             </select>
           </div>
 
-          <div className="field-medium">
-            <input className="input" type="date" value={dataServico} onChange={(e) => setDataServico(e.target.value)} />
+          <div className="field-wrap field-medium">
+            <input
+              className={`input ${dataError ? "input-error" : ""}`}
+              type="date"
+              value={dataServico}
+              onChange={(e) => { setDataServico(e.target.value); if (dataError) setDataError(""); }}
+            />
+            {dataError && <span className="field-error">{dataError}</span>}
           </div>
 
-          <div className="field-wide">
+          <div className="field-wrap field-wide">
             <input
-              className="input"
-              placeholder="Descrição do serviço realizado"
+              className={`input ${descricaoError ? "input-error" : ""}`}
+              placeholder="Descrição do serviço realizado *"
               value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
+              onChange={(e) => { setDescricao(e.target.value); if (descricaoError) setDescricaoError(""); }}
             />
+            {descricaoError && <span className="field-error">{descricaoError}</span>}
           </div>
 
           <div className="field-wide">
@@ -242,7 +255,7 @@ export default function Registros() {
             />
           </div>
 
-          <button type="submit" disabled={creating || veiculos.length === 0} className="btn btnPrimary">
+          <button type="submit" disabled={creating || veiculos.length === 0 || !descricao.trim() || !dataServico.trim()} className="btn btnPrimary">
             {creating ? "Salvando..." : "Registrar"}
           </button>
         </form>
@@ -265,8 +278,17 @@ export default function Registros() {
             <tbody>
               {registros.length === 0 ? (
                 <tr className="row-empty">
-                  <td colSpan={6} style={{ padding: 12, opacity: 0.7 }}>
-                    Nenhum registro cadastrado.
+                  <td colSpan={6} style={{ textAlign: "center", padding: "2rem 1rem" }}>
+                    <div style={{ opacity: .5, fontSize: 14, marginBottom: 12 }}>
+                      Nenhum registro técnico cadastrado ainda.
+                    </div>
+                    <button
+                      className="btn btnPrimary"
+                      type="button"
+                      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    >
+                      + Criar primeiro registro
+                    </button>
                   </td>
                 </tr>
               ) : (

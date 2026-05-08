@@ -105,24 +105,40 @@ export default function Dashboard() {
       ) : (
         <>
           <div className="grid4" style={{ marginTop: 14 }}>
-            <Link className="card" to="/clientes" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link className="card card-stat" to="/clientes" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
               <div className="sub">Clientes</div>
               <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.clientes}</div>
+              {summary.totais.clientes === 0
+                ? <div className="stat-cta">Cadastrar primeiro →</div>
+                : <div className="stat-link">Ver todos →</div>
+              }
             </Link>
 
-            <Link className="card" to="/veiculos" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link className="card card-stat" to="/veiculos" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
               <div className="sub">Veículos</div>
               <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.veiculos}</div>
+              {summary.totais.veiculos === 0
+                ? <div className="stat-cta">Cadastrar primeiro →</div>
+                : <div className="stat-link">Ver todos →</div>
+              }
             </Link>
 
-            <Link className="card" to="/registros" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link className="card card-stat" to="/registros" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
               <div className="sub">Registros Técnicos</div>
               <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.registros}</div>
+              {summary.totais.registros === 0
+                ? <div className="stat-cta">Criar primeiro →</div>
+                : <div className="stat-link">Ver todos →</div>
+              }
             </Link>
 
-            <Link className="card" to="/orcamentos" style={{ textDecoration: "none", color: "inherit" }}>
+            <Link className="card card-stat" to="/orcamentos" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
               <div className="sub">Orçamentos</div>
               <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.orcamentos}</div>
+              {summary.totais.orcamentos === 0
+                ? <div className="stat-cta">Criar primeiro →</div>
+                : <div className="stat-link">Ver todos →</div>
+              }
             </Link>
           </div>
 
