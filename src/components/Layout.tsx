@@ -1,6 +1,8 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import GlobalSearch from "./GlobalSearch";
+import BottomNav from "./BottomNav";
+import FAB from "./FAB";
 import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -112,6 +114,9 @@ export default function Layout() {
               <Link className={`nav-link ${isActive("/orcamentos") ? "active" : ""}`} to="/orcamentos" onClick={handleMobileNavigate}>
                 Orçamentos
               </Link>
+              <Link className={`nav-link ${isActive("/kanban") ? "active" : ""}`} to="/kanban" onClick={handleMobileNavigate}>
+                📋 Kanban
+              </Link>
 
               {/* Link Administração: visível para admin e superadmin dentro de uma oficina */}
               {isAdmin && (
@@ -174,6 +179,14 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {/* BOTTOM NAV + FAB (mobile, apenas modo normal) */}
+      {!modoGlobal && (
+        <>
+          <BottomNav />
+          <FAB />
+        </>
+      )}
     </div>
   );
 }

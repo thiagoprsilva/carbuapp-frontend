@@ -13,6 +13,7 @@ import Veiculos from "../pages/Veiculos";
 import VeiculoDetalhe from "../pages/VeiculoDetalhe";
 import Registros from "../pages/Registros";
 import Orcamentos from "../pages/Orcamentos";
+import KanbanOS from "../pages/KanbanOS";
 import Admin from "../pages/Admin";
 import Superadmin from "../pages/Superadmin";
 import SuperadminOficina from "../pages/SuperadminOficina";
@@ -50,6 +51,7 @@ export function AppRoutes() {
           <Route path="/veiculos/:id" element={<VeiculoDetalhe />} />
           <Route path="/registros" element={<Registros />} />
           <Route path="/orcamentos" element={<Orcamentos />} />
+          <Route path="/kanban" element={<KanbanOS />} />
 
           {/* Administração da oficina (admin + superadmin) */}
           <Route

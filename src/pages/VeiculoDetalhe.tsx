@@ -56,6 +56,10 @@ type OrcamentoItemDraft = {
   precoUnit: number;
 };
 
+type TimelineEvento =
+  | { tipo: "registro"; data: string; id: number; categoria: string; descricao: string; observacoes: string | null }
+  | { tipo: "orcamento"; data: string; id: number; numero: number; total: number };
+
 export default function VeiculoDetalhe() {
   const { id } = useParams();
   const veiculoId = Number(id);
@@ -64,6 +68,9 @@ export default function VeiculoDetalhe() {
   const [registros, setRegistros] = useState<RegistroTecnico[]>([]);
   const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"registros" | "orcamentos" | "timeline">("registros");
+  const [timeline, setTimeline] = useState<TimelineEvento[]>([]);
+  const [loadingTimeline, setLoadingTimeline] = useState(false);
   const [showCreateRegistro, setShowCreateRegistro] = useState(false);
   const [creatingRegistro, setCreatingRegistro] = useState(false);
   const categoriasPadrao = ["Revisão", "Personalização", "Projeto"];
@@ -118,6 +125,24 @@ export default function VeiculoDetalhe() {
     if (!veiculoId) return;
     load();
   }, [veiculoId]);
+
+  async function loadTimeline() {
+    setLoadingTimeline(true);
+    try {
+      const res = await api.get<TimelineEvento[]>(`/veiculos/${veiculoId}/timeline`);
+      setTimeline(res.data);
+    } catch {
+      toast.error("Erro ao carregar timeline.");
+    } finally {
+      setLoadingTimeline(false);
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === "timeline" && veiculoId) {
+      loadTimeline();
+    }
+  }, [activeTab, veiculoId]);
 
   async function handlePdf(orcamentoId: number) {
     const toastId = toast.loading("Gerando PDF...");
@@ -357,79 +382,135 @@ export default function VeiculoDetalhe() {
         </div>
       )}
 
-      <div className="card card-section">
-        <div className="page-header" style={{ marginBottom: 10 }}>
-          <h3 style={{ margin: 0 }}>Histórico Técnico</h3>
-          <span className="badge">{registros.length} registro(s)</span>
-        </div>
-
-        {registros.length === 0 ? (
-          <div className="sub">Nenhum registro técnico encontrado.</div>
-        ) : (
-          <div className="table-scroll">
-            <table className="table table-min-md table-cards">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Categoria</th>
-                  <th>Descrição</th>
-                  <th>Orçamento</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registros.map((r) => (
-                  <tr key={r.id}>
-                    <td data-label="Data">{formatPtBr(r.dataServico)}</td>
-                    <td data-label="Categoria">{r.categoria}</td>
-                    <td data-label="Descrição">{r.descricao}</td>
-                    <td data-label="Orçamento">{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* TABS */}
+      <div className="tab-bar">
+        <button
+          className={`tab-btn ${activeTab === "registros" ? "active" : ""}`}
+          onClick={() => setActiveTab("registros")}
+          type="button"
+        >
+          Registros <span className="badge" style={{ marginLeft: 6 }}>{registros.length}</span>
+        </button>
+        <button
+          className={`tab-btn ${activeTab === "orcamentos" ? "active" : ""}`}
+          onClick={() => setActiveTab("orcamentos")}
+          type="button"
+        >
+          Orçamentos <span className="badge" style={{ marginLeft: 6 }}>{orcamentos.length}</span>
+        </button>
+        <button
+          className={`tab-btn ${activeTab === "timeline" ? "active" : ""}`}
+          onClick={() => setActiveTab("timeline")}
+          type="button"
+        >
+          Timeline
+        </button>
       </div>
 
-      <div className="card">
-        <div className="page-header" style={{ marginBottom: 10 }}>
-          <h3 style={{ margin: 0 }}>Orçamentos</h3>
-          <span className="badge">{orcamentos.length} orçamento(s)</span>
-        </div>
-
-        {orcamentos.length === 0 ? (
-          <div className="sub">Nenhum orçamento encontrado.</div>
-        ) : (
-          <div className="table-scroll">
-            <table className="table table-min-md table-cards">
-              <thead>
-                <tr>
-                  <th>Número</th>
-                  <th>Data</th>
-                  <th>Total</th>
-                  <th style={{ width: 160 }}>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orcamentos.map((o) => (
-                  <tr key={o.id}>
-                    <td data-label="Número">#{o.numero}</td>
-                    <td data-label="Data">{formatPtBr(o.createdAt)}</td>
-                    <td data-label="Total">R$ {Number(o.total).toFixed(2)}</td>
-                    <td>
-                      <div className="action-group">
-                        <button className="btn btnPrimary" onClick={() => handlePdf(o.id)} type="button">
-                          PDF
-                        </button>
-                      </div>
-                    </td>
+      {/* ABA: REGISTROS */}
+      {activeTab === "registros" && (
+        <div className="card">
+          {registros.length === 0 ? (
+            <div className="sub" style={{ padding: "1rem 0" }}>Nenhum registro técnico encontrado.</div>
+          ) : (
+            <div className="table-scroll">
+              <table className="table table-min-md table-cards">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Orçamento</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {registros.map((r) => (
+                    <tr key={r.id}>
+                      <td data-label="Data">{formatPtBr(r.dataServico)}</td>
+                      <td data-label="Categoria"><span className="badge">{r.categoria}</span></td>
+                      <td data-label="Descrição">{r.descricao}</td>
+                      <td data-label="Orçamento">{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ABA: ORÇAMENTOS */}
+      {activeTab === "orcamentos" && (
+        <div className="card">
+          {orcamentos.length === 0 ? (
+            <div className="sub" style={{ padding: "1rem 0" }}>Nenhum orçamento encontrado.</div>
+          ) : (
+            <div className="table-scroll">
+              <table className="table table-min-md table-cards">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Data</th>
+                    <th>Total</th>
+                    <th style={{ width: 160 }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orcamentos.map((o) => (
+                    <tr key={o.id}>
+                      <td data-label="Número" style={{ fontWeight: 900 }}>#{o.numero}</td>
+                      <td data-label="Data">{formatPtBr(o.createdAt)}</td>
+                      <td data-label="Total">R$ {Number(o.total).toFixed(2)}</td>
+                      <td>
+                        <div className="action-group">
+                          <button className="btn btnPrimary" onClick={() => handlePdf(o.id)} type="button">
+                            PDF
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ABA: TIMELINE */}
+      {activeTab === "timeline" && (
+        <div className="card">
+          {loadingTimeline ? (
+            <div className="sub">Carregando timeline...</div>
+          ) : timeline.length === 0 ? (
+            <div className="sub" style={{ padding: "1rem 0" }}>Nenhum evento registrado ainda.</div>
+          ) : (
+            <div className="timeline">
+              {timeline.map((ev, i) => (
+                <div key={`${ev.tipo}-${ev.id}`} className="timeline-item">
+                  <div className={`timeline-dot ${ev.tipo === "registro" ? "dot-registro" : "dot-orcamento"}`} />
+                  {i < timeline.length - 1 && <div className="timeline-line" />}
+                  <div className="timeline-body">
+                    <div className="timeline-date">{formatPtBr(ev.data)}</div>
+                    {ev.tipo === "registro" ? (
+                      <>
+                        <span className="badge" style={{ marginBottom: 4 }}>{ev.categoria}</span>
+                        <div style={{ fontWeight: 700 }}>{ev.descricao}</div>
+                        {ev.observacoes && <div className="sub" style={{ marginTop: 4 }}>{ev.observacoes}</div>}
+                      </>
+                    ) : (
+                      <>
+                        <span className="badge badge-green" style={{ marginBottom: 4 }}>Orçamento</span>
+                        <div style={{ fontWeight: 700 }}>#{ev.numero} — R$ {Number(ev.total).toFixed(2)}</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
