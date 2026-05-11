@@ -15,6 +15,7 @@ export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [nomeError, setNomeError] = useState("");
   const [loadingList, setLoadingList] = useState(true);
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -44,10 +45,10 @@ export default function Clientes() {
     e.preventDefault();
 
     if (!nome.trim()) {
-      toast.error("Informe o nome do cliente.");
+      setNomeError("Nome é obrigatório.");
       return;
     }
-
+    setNomeError("");
     setCreating(true);
     try {
       await api.post("/clientes", {
@@ -58,6 +59,7 @@ export default function Clientes() {
       toast.success("Cliente cadastrado!");
       setNome("");
       setTelefone("");
+      setNomeError("");
       await loadClientes();
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao criar cliente.");
@@ -137,15 +139,21 @@ export default function Clientes() {
 
       <div className="card card-section">
         <form onSubmit={handleCreate} className="inline-form">
-          <div className="field-wide">
-            <input className="input" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+          <div className="field-wrap field-wide">
+            <input
+              className={`input ${nomeError ? "input-error" : ""}`}
+              placeholder="Nome *"
+              value={nome}
+              onChange={(e) => { setNome(e.target.value); if (nomeError) setNomeError(""); }}
+            />
+            {nomeError && <span className="field-error">{nomeError}</span>}
           </div>
 
           <div className="field-medium">
             <input className="input" placeholder="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
           </div>
 
-          <button type="submit" disabled={creating} className="btn btnPrimary">
+          <button type="submit" disabled={creating || !nome.trim()} className="btn btnPrimary">
             {creating ? "Salvando..." : "Novo Cliente"}
           </button>
         </form>
@@ -168,8 +176,17 @@ export default function Clientes() {
               <tbody>
                 {clientes.length === 0 ? (
                   <tr className="row-empty">
-                    <td colSpan={3} style={{ padding: 12, opacity: 0.7 }}>
-                      Nenhum cliente cadastrado.
+                    <td colSpan={3} style={{ textAlign: "center", padding: "2rem 1rem" }}>
+                      <div style={{ opacity: .5, fontSize: 14, marginBottom: 12 }}>
+                        Nenhum cliente cadastrado ainda.
+                      </div>
+                      <button
+                        className="btn btnPrimary"
+                        type="button"
+                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                      >
+                        + Cadastrar primeiro cliente
+                      </button>
                     </td>
                   </tr>
                 ) : (

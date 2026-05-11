@@ -280,6 +280,27 @@ export default function Orcamentos() {
     }
   }
 
+  // ─── WhatsApp ─────────────────────────────────────────────────────────────
+  function handleWhatsApp(o: Orcamento) {
+    const telefone = o.veiculo?.cliente?.telefone;
+    if (!telefone) {
+      toast.error("Cliente sem telefone cadastrado.");
+      return;
+    }
+    const numero = telefone.replace(/\D/g, "");
+    const phone = numero.startsWith("55") ? numero : `55${numero}`;
+    const veiculo = o.veiculo ? `${o.veiculo.modelo} (${o.veiculo.placa})` : "veículo";
+    const itensTexto = o.itens
+      .map((it) => `• ${it.descricao} (${it.qtd}x) — R$ ${Number(it.valorLinha).toFixed(2)}`)
+      .join("\n");
+    const mensagem =
+      `Olá! Segue o orçamento *#${o.numero}* para o ${veiculo}:\n\n` +
+      `${itensTexto}\n\n` +
+      `*Total: R$ ${Number(o.total).toFixed(2)}*\n\n` +
+      `Aguardamos seu retorno!`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`, "_blank");
+  }
+
   // ─── PDF ──────────────────────────────────────────────────────────────────
   async function handlePdf(id: number) {
     const toastId = toast.loading("Gerando PDF...");
@@ -581,10 +602,21 @@ export default function Orcamentos() {
       {/* Tabela de orçamentos */}
       <div className="card">
         {orcamentosFiltrados.length === 0 ? (
-          <div style={{ padding: 16, opacity: .7, fontSize: 14 }}>
-            {filtroStatus === "Todos"
-              ? "Nenhum orçamento cadastrado."
-              : `Nenhum orçamento com status "${filtroStatus}".`}
+          <div style={{ padding: "2rem 1rem", textAlign: "center" }}>
+            <div style={{ opacity: .5, fontSize: 14, marginBottom: 12 }}>
+              {filtroStatus === "Todos"
+                ? "Nenhum orçamento cadastrado ainda."
+                : `Nenhum orçamento com status "${filtroStatus}".`}
+            </div>
+            {filtroStatus === "Todos" && (
+              <button
+                className="btn btnPrimary"
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              >
+                + Criar primeiro orçamento
+              </button>
+            )}
           </div>
         ) : (
           <div className="table-scroll">
@@ -633,11 +665,13 @@ export default function Orcamentos() {
                     <td>
                       <div className="action-group">
                         <button
-                          onClick={() => startEdit(o)}
-                          className="btn btnBlue"
+                          onClick={() => handleWhatsApp(o)}
+                          className="btn"
                           type="button"
+                          title="Enviar orçamento pelo WhatsApp"
+                          style={{ background: "#25D366", borderColor: "#1ebe5d", color: "#fff" }}
                         >
-                          Editar
+                          WhatsApp
                         </button>
                         <button
                           onClick={() => handlePdf(o.id)}
@@ -645,6 +679,13 @@ export default function Orcamentos() {
                           type="button"
                         >
                           PDF
+                        </button>
+                        <button
+                          onClick={() => startEdit(o)}
+                          className="btn btnBlue"
+                          type="button"
+                        >
+                          Editar
                         </button>
                         <button
                           onClick={() => abrirGerarRegistro(o)}
