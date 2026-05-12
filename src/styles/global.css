@@ -478,6 +478,275 @@ a{ color: var(--primary); }
 }
 
 /* =========================
+   CHECKLIST DE AVARIAS
+   ========================= */
+
+.checklist-wrap{
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.checklist-svg-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.checklist-hint{
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.checklist-svg{
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.checklist-panel{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.checklist-legenda{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-legenda-title{
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+.checklist-legenda-item{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.checklist-legenda-dot{
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.checklist-contador{
+  display: flex;
+  align-items: center;
+}
+
+.checklist-zona-detail{
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-zona-nome{
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.checklist-zona-sev{
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.checklist-obs{
+  resize: vertical;
+  min-height: 60px;
+  font-size: 13px;
+}
+
+.checklist-lista{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checklist-lista-item{
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  cursor: pointer;
+  transition: border-color .15s;
+}
+
+.checklist-lista-item.ativo{
+  border-color: var(--primary);
+}
+
+@media (max-width: 720px){
+  .checklist-wrap{
+    grid-template-columns: 1fr;
+  }
+  .checklist-svg{ max-width: 180px; }
+}
+
+/* =========================
+   FOTO UPLOAD
+   ========================= */
+
+.foto-upload-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.foto-upload-form{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.foto-file-label{
+  cursor: pointer;
+}
+
+.foto-file-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color .15s;
+  white-space: nowrap;
+}
+
+.foto-file-btn:hover{
+  border-color: rgba(249,115,22,.30);
+}
+
+.foto-preview-thumb{
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.foto-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.foto-card{
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card2);
+}
+
+.foto-img{
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  cursor: zoom-in;
+  transition: opacity .15s;
+}
+
+.foto-img:hover{ opacity: .88; }
+
+.foto-desc{
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 8px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.foto-del-btn{
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.65);
+  color: #f87171;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.foto-card:hover .foto-del-btn{ opacity: 1; }
+
+.foto-lightbox{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.88);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.foto-lightbox-img{
+  max-width: min(90vw, 900px);
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.foto-lightbox-desc{
+  color: #d0d0e0;
+  font-size: 14px;
+}
+
+.foto-lightbox-close{
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  opacity: .7;
+}
+
+.foto-lightbox-close:hover{ opacity: 1; }
+
+/* =========================
    KANBAN
    ========================= */
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
@@ -635,7 +636,11 @@ export default function Orcamentos() {
               <tbody>
                 {orcamentosFiltrados.map((o) => (
                   <tr key={o.id}>
-                    <td data-label="#" style={{ fontWeight: 900 }}>#{o.numero}</td>
+                    <td data-label="#">
+                      <Link to={`/orcamentos/${o.id}`} style={{ fontWeight: 900, textDecoration: "none", color: "var(--primary)" }}>
+                        #{o.numero}
+                      </Link>
+                    </td>
                     <td data-label="Cliente">{o.veiculo?.cliente?.nome ?? "—"}</td>
                     <td data-label="Veículo">
                       {o.veiculo
