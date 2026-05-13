@@ -15,6 +15,8 @@ import Registros from "../pages/Registros";
 import Orcamentos from "../pages/Orcamentos";
 import KanbanOS from "../pages/KanbanOS";
 import OrcamentoDetalhe from "../pages/OrcamentoDetalhe";
+import OSDetalhe from "../pages/OSDetalhe";
+import EntradaVeiculo from "../pages/EntradaVeiculo";
 import Admin from "../pages/Admin";
 import Superadmin from "../pages/Superadmin";
 import SuperadminOficina from "../pages/SuperadminOficina";
@@ -51,6 +53,8 @@ export function AppRoutes() {
           <Route path="/veiculos" element={<Veiculos />} />
           <Route path="/veiculos/:id" element={<VeiculoDetalhe />} />
           <Route path="/registros" element={<Registros />} />
+          <Route path="/registros/:id" element={<OSDetalhe />} />
+          <Route path="/entrada" element={<EntradaVeiculo />} />
           <Route path="/orcamentos" element={<Orcamentos />} />
           <Route path="/orcamentos/:id" element={<OrcamentoDetalhe />} />
           <Route path="/kanban" element={<KanbanOS />} />

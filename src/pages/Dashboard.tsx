@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
@@ -14,6 +14,8 @@ type Summary = {
   recentes: {
     registros: Array<{
       id: number;
+      numero: number;
+      status: string;
       categoria: string;
       descricao: string;
       dataServico: string;
@@ -24,7 +26,6 @@ type Summary = {
         modelo: string;
         cliente: { id: number; nome: string } | null;
       };
-      orcamento: { id: number; numero: number } | null;
     }>;
     orcamentos: Array<{
       id: number;
@@ -41,8 +42,17 @@ type Summary = {
   };
 };
 
+const STATUS_OS_COR: Record<string, string> = {
+  "Aberta":            "#f59e0b",
+  "Em andamento":      "#60a5fa",
+  "Aguardando peças":  "#a78bfa",
+  "Concluída":         "#4ade80",
+  "Cancelada":         "#f87171",
+};
+
 export default function Dashboard() {
   const { user, oficina, logout } = useAuth();
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +114,34 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
+          {/* CTA principal: Entrada de Veículo */}
+          <div
+            className="card"
+            style={{
+              marginTop: 14,
+              background: "linear-gradient(135deg, var(--primary) 0%, #d97706 100%)",
+              borderColor: "var(--primary)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+            }}
+            onClick={() => navigate("/entrada")}
+          >
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 18, color: "#000" }}>+ Entrada de Veículo</div>
+              <div style={{ fontSize: 13, color: "#000", opacity: 0.75, marginTop: 2 }}>
+                Iniciar nova OS — laudo, vistoria e orçamento
+              </div>
+            </div>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7, flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+
           <div className="grid4" style={{ marginTop: 14 }}>
             <Link className="card card-stat" to="/clientes" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
               <div className="sub">Clientes</div>
@@ -124,7 +162,7 @@ export default function Dashboard() {
             </Link>
 
             <Link className="card card-stat" to="/registros" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
-              <div className="sub">Registros Técnicos</div>
+              <div className="sub">Ordens de Serviço</div>
               <div style={{ fontSize: 30, fontWeight: 900, marginTop: 6 }}>{summary.totais.registros}</div>
               {summary.totais.registros === 0
                 ? <div className="stat-cta">Criar primeiro →</div>
@@ -145,42 +183,51 @@ export default function Dashboard() {
           <div className="grid2" style={{ marginTop: 14 }}>
             <div className="card">
               <div className="page-header" style={{ marginBottom: 10 }}>
-                <h3 style={{ margin: 0 }}>Últimos Registros</h3>
+                <h3 style={{ margin: 0 }}>Últimas OS</h3>
                 <Link to="/registros" className="btn">
-                  Ver todos
+                  Ver todas
                 </Link>
               </div>
 
               {summary.recentes.registros.length === 0 ? (
                 <div className="sub" style={{ marginTop: 10 }}>
-                  Nenhum registro.
+                  Nenhuma OS.
                 </div>
               ) : (
                 <div className="table-scroll" style={{ marginTop: 10 }}>
                   <table className="table table-min-md table-cards">
                     <thead>
                       <tr>
-                        <th>Data</th>
+                        <th>#</th>
                         <th>Veículo</th>
-                        <th>Categoria</th>
-                        <th>Orçamento</th>
+                        <th>Status</th>
+                        <th>Data</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {summary.recentes.registros.map((r) => (
-                        <tr key={r.id}>
-                          <td data-label="Data">{formatPtBr(r.dataServico)}</td>
-                          <td data-label="Veículo">
-                            <Link to={`/veiculos/${r.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
-                              {r.veiculo.modelo} ({r.veiculo.placa})
-                            </Link>
-                          </td>
-                          <td data-label="Categoria">
-                            <span className="badge">{r.categoria}</span>
-                          </td>
-                          <td data-label="Orçamento">{r.orcamento ? `#${r.orcamento.numero}` : "-"}</td>
-                        </tr>
-                      ))}
+                      {summary.recentes.registros.map((r) => {
+                        const cor = STATUS_OS_COR[r.status] ?? "#8b8d9e";
+                        return (
+                          <tr key={r.id}>
+                            <td data-label="#" style={{ fontWeight: 900 }}>
+                              <Link to={`/registros/${r.id}`} style={{ textDecoration: "none" }}>
+                                OS-{r.numero}
+                              </Link>
+                            </td>
+                            <td data-label="Veículo">
+                              <Link to={`/veiculos/${r.veiculo.id}`} style={{ fontWeight: 900, textDecoration: "none" }}>
+                                {r.veiculo.modelo} ({r.veiculo.placa})
+                              </Link>
+                            </td>
+                            <td data-label="Status">
+                              <span className="badge" style={{ color: cor, borderColor: cor, background: `${cor}18` }}>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td data-label="Data">{formatPtBr(r.dataServico)}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

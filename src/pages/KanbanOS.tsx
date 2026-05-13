@@ -3,27 +3,30 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { api } from "../services/api";
 
-type OrcamentoStatus = "Pendente" | "Aprovado" | "Rejeitado" | "Executado";
+type OSStatus = "Aberta" | "Em andamento" | "Aguardando peças" | "Concluída" | "Cancelada";
 
-const COLUNAS: { status: OrcamentoStatus; label: string; cor: string }[] = [
-  { status: "Pendente",  label: "Pendente",  cor: "#f59e0b" },
-  { status: "Aprovado",  label: "Aprovado",  cor: "#60a5fa" },
-  { status: "Executado", label: "Executado", cor: "#4ade80" },
-  { status: "Rejeitado", label: "Rejeitado", cor: "#f87171" },
+const COLUNAS: { status: OSStatus; label: string; cor: string }[] = [
+  { status: "Aberta",           label: "Aberta",           cor: "#f59e0b" },
+  { status: "Em andamento",     label: "Em andamento",     cor: "#60a5fa" },
+  { status: "Aguardando peças", label: "Aguardando peças", cor: "#a78bfa" },
+  { status: "Concluída",        label: "Concluída",        cor: "#4ade80" },
+  { status: "Cancelada",        label: "Cancelada",        cor: "#f87171" },
 ];
 
-type Orcamento = {
+type OS = {
   id: number;
   numero: number;
-  status: OrcamentoStatus;
-  total: number;
+  status: OSStatus;
+  categoria: string;
+  descricao: string;
+  dataServico: string;
   createdAt: string;
   veiculo?: {
     id: number;
     modelo: string;
     placa: string;
     cliente?: { nome: string } | null;
-  };
+  } | null;
 };
 
 function formatPtBr(iso: string) {
@@ -31,17 +34,17 @@ function formatPtBr(iso: string) {
 }
 
 export default function KanbanOS() {
-  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
+  const [ordens, setOrdens] = useState<OS[]>([]);
   const [loading, setLoading] = useState(true);
   const [movendo, setMovendo] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
     try {
-      const res = await api.get<Orcamento[]>("/orcamento");
-      setOrcamentos(res.data);
+      const res = await api.get<OS[]>("/registroTecnico");
+      setOrdens(res.data);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Erro ao carregar orçamentos.");
+      toast.error(err?.response?.data?.message ?? "Erro ao carregar ordens.");
     } finally {
       setLoading(false);
     }
@@ -51,25 +54,24 @@ export default function KanbanOS() {
     load();
   }, []);
 
-  async function moverStatus(id: number, novoStatus: OrcamentoStatus) {
+  async function moverStatus(id: number, novoStatus: OSStatus) {
     setMovendo(id);
     // Atualiza otimisticamente
-    setOrcamentos((prev) =>
+    setOrdens((prev) =>
       prev.map((o) => (o.id === id ? { ...o, status: novoStatus } : o))
     );
     try {
-      await api.patch(`/orcamento/${id}/status`, { status: novoStatus });
+      await api.patch(`/registroTecnico/${id}/status`, { status: novoStatus });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao atualizar status.");
-      // Reverte em caso de erro
       await load();
     } finally {
       setMovendo(null);
     }
   }
 
-  const porColuna = (status: OrcamentoStatus) =>
-    orcamentos.filter((o) => o.status === status);
+  const porColuna = (status: OSStatus) =>
+    ordens.filter((o) => o.status === status);
 
   if (loading) return <div className="card">Carregando...</div>;
 
@@ -77,15 +79,18 @@ export default function KanbanOS() {
     <div>
       <div className="page-header">
         <div>
-          <h2 className="h2">Kanban de Orçamentos</h2>
-          <div className="sub">Arraste ou mova os orçamentos entre as etapas do fluxo.</div>
+          <h2 className="h2">Kanban de OS</h2>
+          <div className="sub">Mova as ordens de serviço entre as etapas do fluxo.</div>
         </div>
         <div className="page-header-actions">
           <button className="btn btnGray" onClick={load} type="button">
             Atualizar
           </button>
-          <Link to="/orcamentos" className="btn">
+          <Link to="/registros" className="btn">
             Ver lista
+          </Link>
+          <Link to="/entrada" className="btn btnPrimary">
+            + Entrada
           </Link>
         </div>
       </div>
@@ -108,13 +113,22 @@ export default function KanbanOS() {
               {/* Cards */}
               <div className="kanban-cards">
                 {cards.length === 0 ? (
-                  <div className="kanban-empty">Nenhum orçamento</div>
+                  <div className="kanban-empty">Nenhuma OS</div>
                 ) : (
                   cards.map((o) => (
                     <div key={o.id} className="kanban-card">
                       <div className="kanban-card-num">
-                        <span style={{ fontWeight: 900 }}>#{o.numero}</span>
+                        <Link
+                          to={`/registros/${o.id}`}
+                          style={{ fontWeight: 900, textDecoration: "none" }}
+                        >
+                          OS-{o.numero}
+                        </Link>
                         <span className="sub" style={{ fontSize: 11 }}>{formatPtBr(o.createdAt)}</span>
+                      </div>
+
+                      <div className="sub" style={{ fontSize: 11, marginBottom: 2 }}>
+                        {o.categoria}
                       </div>
 
                       {o.veiculo && (
@@ -133,8 +147,12 @@ export default function KanbanOS() {
                         </div>
                       )}
 
-                      <div className="kanban-card-total">
-                        R$ {Number(o.total).toFixed(2)}
+                      <div
+                        className="sub"
+                        style={{ fontSize: 12, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                        title={o.descricao}
+                      >
+                        {o.descricao}
                       </div>
 
                       {/* Botões de mover */}

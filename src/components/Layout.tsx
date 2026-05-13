@@ -109,7 +109,7 @@ export default function Layout() {
                 Veículos
               </Link>
               <Link className={`nav-link ${isActive("/registros") ? "active" : ""}`} to="/registros" onClick={handleMobileNavigate}>
-                Registros Técnicos
+                Ordens de Serviço
               </Link>
               <Link className={`nav-link ${isActive("/orcamentos") ? "active" : ""}`} to="/orcamentos" onClick={handleMobileNavigate}>
                 Orçamentos

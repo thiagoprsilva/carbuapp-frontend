@@ -13,11 +13,11 @@ type Foto = {
 };
 
 type Props = {
-  orcamentoId: number;
+  registroTecnicoId: number;
   readonly?: boolean;
 };
 
-export default function FotoUpload({ orcamentoId, readonly = false }: Props) {
+export default function FotoUpload({ registroTecnicoId, readonly = false }: Props) {
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -29,7 +29,7 @@ export default function FotoUpload({ orcamentoId, readonly = false }: Props) {
   async function loadFotos() {
     setLoading(true);
     try {
-      const res = await api.get<Foto[]>(`/orcamento/${orcamentoId}/fotos`);
+      const res = await api.get<Foto[]>(`/registroTecnico/${registroTecnicoId}/fotos`);
       setFotos(res.data);
     } catch {
       // silencioso — pode não ter fotos
@@ -40,7 +40,7 @@ export default function FotoUpload({ orcamentoId, readonly = false }: Props) {
 
   useEffect(() => {
     loadFotos();
-  }, [orcamentoId]);
+  }, [registroTecnicoId]);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -60,7 +60,7 @@ export default function FotoUpload({ orcamentoId, readonly = false }: Props) {
 
     setUploading(true);
     try {
-      await api.post(`/orcamento/${orcamentoId}/fotos`, formData, {
+      await api.post(`/registroTecnico/${registroTecnicoId}/fotos`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Foto enviada!");
@@ -77,7 +77,7 @@ export default function FotoUpload({ orcamentoId, readonly = false }: Props) {
 
   async function handleDelete(fotoId: number) {
     try {
-      await api.delete(`/orcamento/${orcamentoId}/fotos/${fotoId}`);
+      await api.delete(`/registroTecnico/${registroTecnicoId}/fotos/${fotoId}`);
       toast.success("Foto removida.");
       setFotos((prev) => prev.filter((f) => f.id !== fotoId));
     } catch (err: any) {
