@@ -51,10 +51,8 @@ export default function OrcamentoDetalhe() {
   async function loadOrcamento() {
     setLoading(true);
     try {
-      const res = await api.get<Orcamento[]>("/orcamento");
-      const found = res.data.find((o) => o.id === orcamentoId);
-      if (!found) throw new Error("Orçamento não encontrado.");
-      setOrcamento(found);
+      const res = await api.get<Orcamento>(`/orcamento/${orcamentoId}`);
+      setOrcamento(res.data);
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao carregar orçamento.");
     } finally {
