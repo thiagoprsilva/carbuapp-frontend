@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
+import { SkeletonTable } from "../components/Skeleton";
 
 // ─── tipos ────────────────────────────────────────────────────────────────────
 
@@ -47,8 +49,7 @@ function formatDate(iso: string) {
 // ─── componente principal ─────────────────────────────────────────────────────
 
 export default function Orcamentos() {
-  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // filtro de status
   const [filtroStatus, setFiltroStatus] = useState<OrcamentoStatus | "Todos">("Todos");
@@ -97,21 +98,10 @@ export default function Orcamentos() {
   }, [orcamentos]);
 
   // ─── carga de dados ────────────────────────────────────────────────────────
-  async function loadOrcamentos() {
-    const res = await api.get<Orcamento[]>("/orcamento");
-    setOrcamentos(res.data);
-  }
-
-  async function refresh() {
-    setLoading(true);
-    try {
-      await loadOrcamentos();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { refresh(); }, []);
+  const { data: orcamentos = [], isLoading: loading } = useQuery<Orcamento[]>({
+    queryKey: ["orcamentos"],
+    queryFn: () => api.get<Orcamento[]>("/orcamento").then((r) => r.data),
+  });
 
   // ─── formulário de edição ──────────────────────────────────────────────────
   function resetEdit() {
@@ -147,7 +137,7 @@ export default function Orcamentos() {
       await api.put(`/orcamento/${editingId}`, { itens: itensDraft });
       toast.success("Orçamento atualizado!");
       resetEdit();
-      await loadOrcamentos();
+      queryClient.invalidateQueries({ queryKey: ["orcamentos"] });
     } catch (error: any) {
       toast.error(error?.response?.data?.message ?? "Erro ao atualizar orçamento.");
     } finally {
@@ -167,8 +157,8 @@ export default function Orcamentos() {
   async function handleStatusChange(id: number, novoStatus: string) {
     try {
       await api.patch(`/orcamento/${id}/status`, { status: novoStatus });
-      setOrcamentos((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, status: novoStatus as OrcamentoStatus } : o))
+      queryClient.setQueryData<Orcamento[]>(["orcamentos"], (prev) =>
+        prev ? prev.map((o) => (o.id === id ? { ...o, status: novoStatus as OrcamentoStatus } : o)) : prev
       );
       toast.success(`Status → "${novoStatus}"`);
     } catch (error: any) {
@@ -188,7 +178,9 @@ export default function Orcamentos() {
 
     try {
       await api.delete(`/orcamento/${id}`);
-      setOrcamentos((prev) => prev.filter((o) => o.id !== id));
+      queryClient.setQueryData<Orcamento[]>(["orcamentos"], (prev) =>
+        prev ? prev.filter((o) => o.id !== id) : prev
+      );
       if (editingId === id) resetEdit();
       toast.success("Orçamento removido.");
     } catch (error: any) {
@@ -230,7 +222,7 @@ export default function Orcamentos() {
   }
 
   // ─── render ───────────────────────────────────────────────────────────────
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonTable rows={6} cols={5} />;
 
   return (
     <div>

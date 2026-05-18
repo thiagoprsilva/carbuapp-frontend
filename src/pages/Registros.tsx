@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
+import { SkeletonTable } from "../components/Skeleton";
 
 type Veiculo = {
   id: number;
@@ -39,30 +41,16 @@ function formatPtBr(iso: string) {
 
 export default function Registros() {
   const navigate = useNavigate();
-  const [registros, setRegistros] = useState<OS[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: number | null }>({
     open: false,
     id: null,
   });
 
-  async function loadRegistros() {
-    const res = await api.get<OS[]>("/registroTecnico");
-    setRegistros(res.data);
-  }
-
-  async function refresh() {
-    setLoading(true);
-    try {
-      await loadRegistros();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    refresh();
-  }, []);
+  const { data: registros = [], isLoading: loading } = useQuery<OS[]>({
+    queryKey: ["registros"],
+    queryFn: () => api.get<OS[]>("/registroTecnico").then((r) => r.data),
+  });
 
   function pedirConfirmacaoDelete(id: number) {
     setConfirmDelete({ open: true, id });
@@ -76,13 +64,13 @@ export default function Registros() {
     try {
       await api.delete(`/registroTecnico/${id}`);
       toast.success("OS removida.");
-      await loadRegistros();
+      queryClient.invalidateQueries({ queryKey: ["registros"] });
     } catch (error: any) {
       toast.error(error?.response?.data?.message ?? "Erro ao remover OS.");
     }
   }
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonTable rows={6} cols={5} />;
 
   return (
     <div>

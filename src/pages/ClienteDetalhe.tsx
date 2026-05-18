@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
+import { SkeletonCard } from "../components/Skeleton";
 
 type Cliente = {
   id: number;
@@ -24,10 +26,8 @@ type Veiculo = {
 export default function ClienteDetalhe() {
   const { id } = useParams();
   const clienteId = Number(id);
+  const queryClient = useQueryClient();
 
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateVeiculo, setShowCreateVeiculo] = useState(false);
   const [creatingVeiculo, setCreatingVeiculo] = useState(false);
   const [placa, setPlaca] = useState("");
@@ -44,27 +44,28 @@ export default function ClienteDetalhe() {
     setAlimentacao("");
   }
 
-  async function load() {
-    setLoading(true);
-    try {
-      const [cRes, vRes] = await Promise.all([
-        api.get<Cliente>(`/clientes/${clienteId}`),
-        api.get<Veiculo[]>("/veiculos", { params: { clienteId } }),
-      ]);
+  const { data: cliente, isLoading: loadingCliente } = useQuery<Cliente>({
+    queryKey: ["cliente", clienteId],
+    queryFn: async () => {
+      try {
+        const res = await api.get<Cliente>(`/clientes/${clienteId}`);
+        return res.data;
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message ?? "Erro ao carregar cliente.");
+        throw error;
+      }
+    },
+    enabled: !!clienteId,
+  });
 
-      setCliente(cRes.data);
-      setVeiculos(vRes.data);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message ?? "Erro ao carregar cliente.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: veiculos = [], isLoading: loadingVeiculos } = useQuery<Veiculo[]>({
+    queryKey: ["cliente-veiculos", clienteId],
+    queryFn: () =>
+      api.get<Veiculo[]>("/veiculos", { params: { clienteId } }).then((r) => r.data),
+    enabled: !!clienteId,
+  });
 
-  useEffect(() => {
-    if (!clienteId) return;
-    load();
-  }, [clienteId]);
+  const loading = loadingCliente || loadingVeiculos;
 
   async function handleCreateVeiculo(e: React.FormEvent) {
     e.preventDefault();
@@ -88,7 +89,7 @@ export default function ClienteDetalhe() {
       toast.success("Veículo cadastrado!");
       resetVeiculoForm();
       setShowCreateVeiculo(false);
-      await load();
+      queryClient.invalidateQueries({ queryKey: ["cliente-veiculos", clienteId] });
     } catch (error: any) {
       toast.error(error?.response?.data?.message ?? "Erro ao criar veículo.");
     } finally {
@@ -96,7 +97,7 @@ export default function ClienteDetalhe() {
     }
   }
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonCard lines={4} />;
   if (!cliente) return <div className="card">Cliente não encontrado.</div>;
 
   return (

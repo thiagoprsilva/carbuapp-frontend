@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
+import { SkeletonTable } from "../components/Skeleton";
 
 type Cliente = {
   id: number;
@@ -30,10 +32,7 @@ type Veiculo = {
 const ALIMENTACAO_OPCOES = ["Gasolina", "Flex", "Etanol", "Diesel"] as const;
 
 export default function Veiculos() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [loadingClientes, setLoadingClientes] = useState(true);
-  const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
-  const [loadingList, setLoadingList] = useState(true);
+  const queryClient = useQueryClient();
   const [clienteId, setClienteId] = useState<number>(0);
   const [placa, setPlaca] = useState("");
   const [modelo, setModelo] = useState("");
@@ -56,36 +55,23 @@ export default function Veiculos() {
     label: string;
   }>({ open: false, id: null, label: "" });
 
-  async function loadClientes() {
-    setLoadingClientes(true);
-    try {
-      const res = await api.get<Cliente[]>("/clientes");
-      setClientes(res.data);
-      if (res.data.length > 0) setClienteId(res.data[0].id);
-    } finally {
-      setLoadingClientes(false);
-    }
-  }
+  const { data: clientes = [], isLoading: loadingClientes } = useQuery<Cliente[]>({
+    queryKey: ["clientes"],
+    queryFn: () => api.get<Cliente[]>("/clientes").then((r) => r.data),
+  });
 
-  async function loadVeiculos() {
-    setLoadingList(true);
-    try {
-      const res = await api.get<Veiculo[]>("/veiculos");
-      setVeiculos(res.data);
-    } finally {
-      setLoadingList(false);
-    }
-  }
+  // Inicializa clienteId com o primeiro cliente quando carregado
+  const effectiveClienteId = clienteId !== 0 ? clienteId : (clientes[0]?.id ?? 0);
 
-  useEffect(() => {
-    loadClientes();
-    loadVeiculos();
-  }, []);
+  const { data: veiculos = [], isLoading: loadingList } = useQuery<Veiculo[]>({
+    queryKey: ["veiculos"],
+    queryFn: () => api.get<Veiculo[]>("/veiculos").then((r) => r.data),
+  });
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!clienteId) {
+    if (!effectiveClienteId) {
       toast.error("Selecione um cliente.");
       return;
     }
@@ -98,7 +84,7 @@ export default function Veiculos() {
     setCreating(true);
     try {
       await api.post("/veiculos", {
-        clienteId,
+        clienteId: effectiveClienteId,
         placa: placa.trim().toUpperCase(),
         modelo: modelo.trim(),
         ano: ano.trim() || null,
@@ -112,7 +98,7 @@ export default function Veiculos() {
       setAno("");
       setMotor("");
       setAlimentacao("");
-      await loadVeiculos();
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao criar veículo.");
     } finally {
@@ -162,7 +148,7 @@ export default function Veiculos() {
 
       toast.success("Veículo atualizado!");
       cancelEdit();
-      await loadVeiculos();
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao atualizar veículo.");
     }
@@ -180,7 +166,7 @@ export default function Veiculos() {
     try {
       await api.delete(`/veiculos/${id}`);
       toast.success("Veículo removido.");
-      await loadVeiculos();
+      queryClient.invalidateQueries({ queryKey: ["veiculos"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao remover veículo.");
     }
@@ -211,7 +197,7 @@ export default function Veiculos() {
           <div className="field-wide">
             <select
               className="select"
-              value={clienteId}
+              value={effectiveClienteId}
               onChange={(e) => setClienteId(Number(e.target.value))}
               disabled={loadingClientes || clientes.length === 0}
             >
@@ -273,7 +259,7 @@ export default function Veiculos() {
       </div>
 
       {loadingList ? (
-        <div className="card">Carregando...</div>
+        <SkeletonTable rows={6} cols={5} />
       ) : (
         <div className="card">
           <div className="table-scroll">

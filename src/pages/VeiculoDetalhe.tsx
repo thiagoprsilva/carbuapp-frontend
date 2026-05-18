@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
+import { SkeletonCard } from "../components/Skeleton";
 
 type Cliente = {
   id: number;
@@ -68,55 +70,51 @@ export default function VeiculoDetalhe() {
   const veiculoId = Number(id);
   const navigate = useNavigate();
 
-  const [veiculo, setVeiculo] = useState<Veiculo | null>(null);
-  const [registros, setRegistros] = useState<RegistroTecnico[]>([]);
-  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"registros" | "orcamentos" | "timeline">("registros");
-  const [timeline, setTimeline] = useState<TimelineEvento[]>([]);
-  const [loadingTimeline, setLoadingTimeline] = useState(false);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const [vRes, rRes, oRes] = await Promise.all([
-        api.get<Veiculo>(`/veiculos/${veiculoId}`),
-        api.get<RegistroTecnico[]>("/registroTecnico", { params: { veiculoId } }),
-        api.get<Orcamento[]>("/orcamento", { params: { veiculoId } }),
-      ]);
+  const { data: veiculo, isLoading: loadingVeiculo } = useQuery<Veiculo>({
+    queryKey: ["veiculo", veiculoId],
+    queryFn: async () => {
+      try {
+        const res = await api.get<Veiculo>(`/veiculos/${veiculoId}`);
+        return res.data;
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message ?? "Erro ao carregar veículo.");
+        throw error;
+      }
+    },
+    enabled: !!veiculoId,
+  });
 
-      setVeiculo(vRes.data);
-      setRegistros(rRes.data);
-      setOrcamentos(oRes.data);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message ?? "Erro ao carregar veículo.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: registros = [] } = useQuery<RegistroTecnico[]>({
+    queryKey: ["veiculo-registros", veiculoId],
+    queryFn: () =>
+      api.get<RegistroTecnico[]>("/registroTecnico", { params: { veiculoId } }).then((r) => r.data),
+    enabled: !!veiculoId,
+  });
 
-  useEffect(() => {
-    if (!veiculoId) return;
-    load();
-  }, [veiculoId]);
+  const { data: orcamentos = [] } = useQuery<Orcamento[]>({
+    queryKey: ["veiculo-orcamentos", veiculoId],
+    queryFn: () =>
+      api.get<Orcamento[]>("/orcamento", { params: { veiculoId } }).then((r) => r.data),
+    enabled: !!veiculoId,
+  });
 
-  async function loadTimeline() {
-    setLoadingTimeline(true);
-    try {
-      const res = await api.get<TimelineEvento[]>(`/veiculos/${veiculoId}/timeline`);
-      setTimeline(res.data);
-    } catch {
-      toast.error("Erro ao carregar timeline.");
-    } finally {
-      setLoadingTimeline(false);
-    }
-  }
+  const { data: timeline = [], isLoading: loadingTimeline } = useQuery<TimelineEvento[]>({
+    queryKey: ["veiculo-timeline", veiculoId],
+    queryFn: async () => {
+      try {
+        const res = await api.get<TimelineEvento[]>(`/veiculos/${veiculoId}/timeline`);
+        return res.data;
+      } catch {
+        toast.error("Erro ao carregar timeline.");
+        throw new Error("Erro ao carregar timeline.");
+      }
+    },
+    enabled: !!veiculoId && activeTab === "timeline",
+  });
 
-  useEffect(() => {
-    if (activeTab === "timeline" && veiculoId) {
-      loadTimeline();
-    }
-  }, [activeTab, veiculoId]);
+  const loading = loadingVeiculo;
 
   async function handlePdf(orcamentoId: number) {
     const toastId = toast.loading("Gerando PDF...");
@@ -136,7 +134,7 @@ export default function VeiculoDetalhe() {
     return new Date(iso).toLocaleDateString("pt-BR");
   }
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonCard lines={4} />;
   if (!veiculo) return <div className="card">Veículo não encontrado.</div>;
 
   return (

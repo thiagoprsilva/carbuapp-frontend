@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
+import { SkeletonTable } from "../components/Skeleton";
 
 type Cliente = {
   id: number;
@@ -12,11 +14,10 @@ type Cliente = {
 };
 
 export default function Clientes() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const queryClient = useQueryClient();
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [nomeError, setNomeError] = useState("");
-  const [loadingList, setLoadingList] = useState(true);
   const [creating, setCreating] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [editNome, setEditNome] = useState("");
@@ -27,19 +28,10 @@ export default function Clientes() {
     nome: string;
   }>({ open: false, id: null, nome: "" });
 
-  async function loadClientes() {
-    setLoadingList(true);
-    try {
-      const res = await api.get<Cliente[]>("/clientes");
-      setClientes(res.data);
-    } finally {
-      setLoadingList(false);
-    }
-  }
-
-  useEffect(() => {
-    loadClientes();
-  }, []);
+  const { data: clientes = [], isLoading: loadingList } = useQuery<Cliente[]>({
+    queryKey: ["clientes"],
+    queryFn: () => api.get<Cliente[]>("/clientes").then((r) => r.data),
+  });
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +52,7 @@ export default function Clientes() {
       setNome("");
       setTelefone("");
       setNomeError("");
-      await loadClientes();
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao criar cliente.");
     } finally {
@@ -94,7 +86,7 @@ export default function Clientes() {
 
       toast.success("Cliente atualizado!");
       cancelEdit();
-      await loadClientes();
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao atualizar cliente.");
     }
@@ -112,7 +104,7 @@ export default function Clientes() {
     try {
       await api.delete(`/clientes/${id}`);
       toast.success("Cliente removido.");
-      await loadClientes();
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao remover cliente.");
     }
@@ -160,7 +152,7 @@ export default function Clientes() {
       </div>
 
       {loadingList ? (
-        <div className="card">Carregando...</div>
+        <SkeletonTable rows={6} cols={4} />
       ) : (
         <div className="card">
           <div className="table-scroll">

@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import ChecklistAvarias, { AvariaMap } from "../components/ChecklistAvarias";
 import FotoUpload from "../components/FotoUpload";
+import { SkeletonCard } from "../components/Skeleton";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -75,9 +77,8 @@ function formatPtBr(iso: string) {
 export default function OSDetalhe() {
   const { id } = useParams();
   const osId = Number(id);
+  const queryClient = useQueryClient();
 
-  const [os, setOs] = useState<OS | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"orcamentos" | "laudo" | "fotos">("orcamentos");
 
   // ─── Laudo edit ─────────────────────────────────────────────────────────────
@@ -98,18 +99,19 @@ export default function OSDetalhe() {
 
   // ─── Load ──────────────────────────────────────────────────────────────────
 
-  async function loadOS() {
-    setLoading(true);
-    try {
-      const res = await api.get<OS>(`/registroTecnico/${osId}`);
-      setOs(res.data);
-      if (res.data.laudo) populateLaudo(res.data.laudo);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Erro ao carregar OS.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: os, isLoading: loading } = useQuery<OS>({
+    queryKey: ["os", osId],
+    queryFn: async () => {
+      try {
+        const res = await api.get<OS>(`/registroTecnico/${osId}`);
+        return res.data;
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message ?? "Erro ao carregar OS.");
+        throw err;
+      }
+    },
+    enabled: !!osId,
+  });
 
   function populateLaudo(laudo: NonNullable<OS["laudo"]>) {
     setKmEdit(laudo.km?.toString() ?? "");
@@ -122,23 +124,18 @@ export default function OSDetalhe() {
     setAvariasEdit(map);
   }
 
-  useEffect(() => {
-    if (!osId) return;
-    loadOS();
-  }, [osId]);
-
   // ─── Status da OS ──────────────────────────────────────────────────────────
 
   async function handleChangeStatus(novoStatus: string) {
     if (!os || changingStatus) return;
     setChangingStatus(true);
     const anterior = os.status;
-    setOs((prev) => prev ? { ...prev, status: novoStatus } : prev);
+    queryClient.setQueryData<OS>(["os", osId], (prev) => prev ? { ...prev, status: novoStatus } : prev);
     try {
       await api.patch(`/registroTecnico/${osId}/status`, { status: novoStatus });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao atualizar status.");
-      setOs((prev) => prev ? { ...prev, status: anterior } : prev);
+      queryClient.setQueryData<OS>(["os", osId], (prev) => prev ? { ...prev, status: anterior } : prev);
     } finally {
       setChangingStatus(false);
     }
@@ -163,7 +160,7 @@ export default function OSDetalhe() {
       });
       toast.success("Laudo salvo!");
       setLaudoEditMode(false);
-      await loadOS();
+      queryClient.invalidateQueries({ queryKey: ["os", osId] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao salvar laudo.");
     } finally {
@@ -206,7 +203,7 @@ export default function OSDetalhe() {
       toast.success("Orçamento criado!");
       setShowOrcForm(false);
       setOrcItens([{ descricao: "", qtd: 1, precoUnit: 0 }]);
-      await loadOS();
+      queryClient.invalidateQueries({ queryKey: ["os", osId] });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao criar orçamento.");
     } finally {
@@ -249,7 +246,7 @@ export default function OSDetalhe() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonCard lines={5} />;
   if (!os) return <div className="card">OS não encontrada.</div>;
 
   const corStatus = STATUS_COR[os.status] ?? "#8b8d9e";
@@ -417,7 +414,7 @@ export default function OSDetalhe() {
                             onChange={async (e) => {
                               try {
                                 const res = await api.patch(`/orcamento/${orc.id}/status`, { status: e.target.value });
-                                setOs((prev) => prev
+                                queryClient.setQueryData<OS>(["os", osId], (prev) => prev
                                   ? { ...prev, orcamentos: prev.orcamentos.map((o) => o.id === orc.id ? { ...o, status: res.data.status } : o) }
                                   : prev
                                 );
@@ -455,7 +452,7 @@ export default function OSDetalhe() {
               {!laudoEditMode ? (
                 <button className="btn btnBlue" type="button" onClick={() => {
                   setLaudoEditMode(true);
-                  if (!os.laudo) { setAvariasEdit({}); setKmEdit(""); setNivelEdit(""); setObsLaudoEdit(""); }
+                  if (os.laudo) { populateLaudo(os.laudo); } else { setAvariasEdit({}); setKmEdit(""); setNivelEdit(""); setObsLaudoEdit(""); }
                 }}>
                   {os.laudo ? "Editar laudo" : "Registrar entrada"}
                 </button>

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
+import { SkeletonCard } from "../components/Skeleton";
 
 type Summary = {
   totais: {
@@ -53,29 +54,28 @@ const STATUS_OS_COR: Record<string, string> = {
 export default function Dashboard() {
   const { user, oficina, logout } = useAuth();
   const navigate = useNavigate();
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const { data: summary, isLoading: loading } = useQuery<Summary>({
+    queryKey: ["dashboard-summary"],
+    queryFn: async () => {
+      try {
+        const res = await api.get<Summary>("/dashboard/summary");
+        return res.data;
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message ?? "Erro ao carregar dashboard.");
+        throw err;
+      }
+    },
+  });
 
   function formatPtBr(iso: string) {
     return new Date(iso).toLocaleDateString("pt-BR");
   }
 
-  async function loadSummary() {
-    setLoading(true);
-    try {
-      const res = await api.get<Summary>("/dashboard/summary");
-      setSummary(res.data);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Erro ao carregar dashboard.");
-      setSummary(null);
-    } finally {
-      setLoading(false);
-    }
+  function loadSummary() {
+    queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
   }
-
-  useEffect(() => {
-    loadSummary();
-  }, []);
 
   return (
     <div>
@@ -100,8 +100,8 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="card" style={{ marginTop: 14 }}>
-          Carregando...
+        <div style={{ marginTop: 14 }}>
+          <SkeletonCard lines={6} />
         </div>
       ) : !summary ? (
         <div className="card" style={{ marginTop: 14 }}>

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
+import { SkeletonCard } from "../components/Skeleton";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -45,25 +46,19 @@ export default function OrcamentoDetalhe() {
   const { id } = useParams();
   const orcamentoId = Number(id);
 
-  const [orcamento, setOrcamento] = useState<Orcamento | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  async function loadOrcamento() {
-    setLoading(true);
-    try {
-      const res = await api.get<Orcamento>(`/orcamento/${orcamentoId}`);
-      setOrcamento(res.data);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Erro ao carregar orçamento.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!orcamentoId) return;
-    loadOrcamento();
-  }, [orcamentoId]);
+  const { data: orcamento, isLoading: loading } = useQuery<Orcamento>({
+    queryKey: ["orcamento", orcamentoId],
+    queryFn: async () => {
+      try {
+        const res = await api.get<Orcamento>(`/orcamento/${orcamentoId}`);
+        return res.data;
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message ?? "Erro ao carregar orçamento.");
+        throw err;
+      }
+    },
+    enabled: !!orcamentoId,
+  });
 
   // ─── PDF ─────────────────────────────────────────────────────────────────────
 
@@ -103,7 +98,7 @@ export default function OrcamentoDetalhe() {
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return <SkeletonCard lines={4} />;
   if (!orcamento) return <div className="card">Orçamento não encontrado.</div>;
 
   const corStatus = STATUS_COR[orcamento.status] ?? "#8b8d9e";

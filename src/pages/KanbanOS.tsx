@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
+import { SkeletonCard } from "../components/Skeleton";
 
 type OSStatus = "Aberta" | "Em andamento" | "Aguardando peças" | "Concluída" | "Cancelada";
 
@@ -34,37 +36,37 @@ function formatPtBr(iso: string) {
 }
 
 export default function KanbanOS() {
-  const [ordens, setOrdens] = useState<OS[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [movendo, setMovendo] = useState<number | null>(null);
 
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await api.get<OS[]>("/registroTecnico");
-      setOrdens(res.data);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Erro ao carregar ordens.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: ordens = [], isLoading: loading } = useQuery<OS[]>({
+    queryKey: ["kanban-os"],
+    queryFn: async () => {
+      try {
+        const res = await api.get<OS[]>("/registroTecnico");
+        return res.data;
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message ?? "Erro ao carregar ordens.");
+        throw err;
+      }
+    },
+  });
 
-  useEffect(() => {
-    load();
-  }, []);
+  function load() {
+    queryClient.invalidateQueries({ queryKey: ["kanban-os"] });
+  }
 
   async function moverStatus(id: number, novoStatus: OSStatus) {
     setMovendo(id);
     // Atualiza otimisticamente
-    setOrdens((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status: novoStatus } : o))
+    queryClient.setQueryData<OS[]>(["kanban-os"], (prev) =>
+      prev ? prev.map((o) => (o.id === id ? { ...o, status: novoStatus } : o)) : prev
     );
     try {
       await api.patch(`/registroTecnico/${id}/status`, { status: novoStatus });
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Erro ao atualizar status.");
-      await load();
+      queryClient.invalidateQueries({ queryKey: ["kanban-os"] });
     } finally {
       setMovendo(null);
     }
@@ -73,7 +75,15 @@ export default function KanbanOS() {
   const porColuna = (status: OSStatus) =>
     ordens.filter((o) => o.status === status);
 
-  if (loading) return <div className="card">Carregando...</div>;
+  if (loading) return (
+    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} style={{ flex: "1 1 180px", minWidth: 160 }}>
+          <SkeletonCard lines={4} />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div>
