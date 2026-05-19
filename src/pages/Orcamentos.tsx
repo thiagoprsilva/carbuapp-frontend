@@ -72,6 +72,12 @@ export default function Orcamentos() {
     numero: number | null;
   }>({ open: false, id: null, numero: null });
 
+  // ─── carga de dados ────────────────────────────────────────────────────────
+  const { data: orcamentos = [], isLoading: loading } = useQuery<Orcamento[]>({
+    queryKey: ["orcamentos"],
+    queryFn: () => api.get<Orcamento[]>("/orcamento").then((r) => r.data),
+  });
+
   // ─── subtotal calculado ────────────────────────────────────────────────────
   const subtotalDraft = useMemo(
     () =>
@@ -96,12 +102,6 @@ export default function Orcamentos() {
     }
     return base;
   }, [orcamentos]);
-
-  // ─── carga de dados ────────────────────────────────────────────────────────
-  const { data: orcamentos = [], isLoading: loading } = useQuery<Orcamento[]>({
-    queryKey: ["orcamentos"],
-    queryFn: () => api.get<Orcamento[]>("/orcamento").then((r) => r.data),
-  });
 
   // ─── formulário de edição ──────────────────────────────────────────────────
   function resetEdit() {
