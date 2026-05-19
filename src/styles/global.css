@@ -106,11 +106,13 @@ a{ color: var(--primary); }
   border: 1px solid transparent;
 }
 
-.nav-link:hover{
-  background: rgba(249,115,22,.10);
-  color: #f97316;
-  border-color: rgba(249,115,22,.15);
-  transform: translateX(2px);
+@media (hover: hover){
+  .nav-link:hover{
+    background: rgba(249,115,22,.10);
+    color: #f97316;
+    border-color: rgba(249,115,22,.15);
+    transform: translateX(2px);
+  }
 }
 
 .nav-link.active{
@@ -202,10 +204,12 @@ a{ color: var(--primary); }
   transition: all .2s ease;
 }
 
-.card:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0,0,0,.35);
-  border-color: rgba(249,115,22,.18);
+@media (hover: hover){
+  .card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,.35);
+    border-color: rgba(249,115,22,.18);
+  }
 }
 
 .row{
@@ -475,6 +479,39 @@ a{ color: var(--primary); }
   font-size: 12px;
   color: var(--blue);
   font-weight: 600;
+}
+
+/* =========================
+   LINHA DE ITEM DE ORÇAMENTO
+   ========================= */
+
+/* Desktop: tudo em uma linha */
+.orc-item-row{
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.orc-desc{ flex: 1 1 200px; min-width: 0; }
+.orc-qty{ width: 72px; flex-shrink: 0; }
+.orc-price{ flex: 0 0 148px; }
+.orc-subtotal{
+  min-width: 88px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px){
+  /* Mobile: descrição ocupa linha inteira; qtd + preço + subtotal + remove numa linha */
+  .orc-item-row{ flex-wrap: wrap; gap: 6px; }
+  .orc-desc{ flex-basis: 100%; }
+  .orc-qty{ flex: 0 0 64px; width: 64px; }
+  .orc-price{ flex: 1 1 0; min-width: 80px; }
+  .orc-subtotal{ flex: 1 1 0; text-align: right; align-self: center; font-size: 13px; min-width: 64px; }
 }
 
 /* =========================
@@ -1112,6 +1149,33 @@ a{ color: var(--primary); }
     margin-top: 52px;
   }
 
+  /* iOS Safari: font-size < 16px dispara zoom automático no foco */
+  .input,
+  .select{
+    font-size: 16px;
+  }
+
+  /* Tab bar: scroll horizontal sem quebra de linha */
+  .tab-bar{
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tab-bar::-webkit-scrollbar{ display: none; }
+  .tab-btn{
+    flex-shrink: 0;
+  }
+
+  /* Modal: padding menor em telas pequenas */
+  .modal-box{
+    padding: 16px;
+  }
+  .modal-actions{
+    margin-top: 14px;
+  }
+
   /* ── Tabelas → cards empilhados no mobile ── */
   .table-cards{
     display: block;
@@ -1293,6 +1357,53 @@ a{ color: var(--primary); }
 }
 
 /* =========================
+   LANDING PAGE — responsividade
+   ========================= */
+
+/* Containers de grid — mobile-first via className */
+.landing-nav   { padding: 14px 40px !important; }
+.landing-footer{ padding: 28px 40px !important; }
+
+.landing-two-col{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.landing-features-grid{
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.landing-personas-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.landing-benefits-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px){
+  .landing-features-grid{ grid-template-columns: repeat(3, 1fr); }
+  .landing-personas-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px){
+  .landing-nav    { padding: 12px 16px !important; }
+  .landing-footer { padding: 20px 16px !important; flex-direction: column !important; align-items: flex-start !important; }
+  .landing-two-col{ grid-template-columns: 1fr; }
+  .landing-features-grid{ grid-template-columns: 1fr 1fr; }
+  .landing-personas-grid { grid-template-columns: 1fr; }
+  .landing-benefits-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px){
+  .landing-features-grid{ grid-template-columns: 1fr; }
+}
+
+/* =========================
    Botões e inputs
    ========================= */
 
@@ -1313,9 +1424,11 @@ a{ color: var(--primary); }
   transition: all .2s ease;
 }
 
-.btn:hover{
-  transform: translateY(-1px);
-  border-color: rgba(249,115,22,.30);
+@media (hover: hover){
+  .btn:hover{
+    transform: translateY(-1px);
+    border-color: rgba(249,115,22,.30);
+  }
 }
 
 .btnPrimary{
@@ -1325,20 +1438,10 @@ a{ color: var(--primary); }
   box-shadow: 0 4px 14px rgba(249,115,22,.30);
 }
 
-.btnPrimary:hover{
-  background: var(--primaryHover);
-  border-color: var(--primaryHover);
-  box-shadow: 0 6px 18px rgba(249,115,22,.40);
-}
-
 .btnBlue{
   background: rgba(96,165,250,.15);
   border-color: rgba(96,165,250,.30);
   color: #60a5fa;
-}
-
-.btnBlue:hover{
-  background: rgba(96,165,250,.22);
 }
 
 .btnRed{
@@ -1347,18 +1450,21 @@ a{ color: var(--primary); }
   color: #f87171;
 }
 
-.btnRed:hover{
-  background: rgba(248,113,113,.22);
-}
-
 .btnGray{
   background: var(--grayBtn);
   border-color: var(--border);
   color: var(--grayBtnText);
 }
 
-.btnGray:hover{
-  border-color: rgba(249,115,22,.25);
+@media (hover: hover){
+  .btnPrimary:hover{
+    background: var(--primaryHover);
+    border-color: var(--primaryHover);
+    box-shadow: 0 6px 18px rgba(249,115,22,.40);
+  }
+  .btnBlue:hover{ background: rgba(96,165,250,.22); }
+  .btnRed:hover{ background: rgba(248,113,113,.22); }
+  .btnGray:hover{ border-color: rgba(249,115,22,.25); }
 }
 
 .btn:disabled{

@@ -359,8 +359,8 @@ export default function OSDetalhe() {
                 )}
               </div>
               {orcItens.map((item, idx) => (
-                <div key={idx} className="inline-form" style={{ marginBottom: 8 }}>
-                  <div className="field-wrap field-wide">
+                <div key={idx} className="orc-item-row">
+                  <div className="field-wrap orc-desc">
                     <input
                       className="input"
                       placeholder="Descrição do serviço/peça *"
@@ -369,7 +369,7 @@ export default function OSDetalhe() {
                       required
                     />
                   </div>
-                  <div className="field-wrap" style={{ width: 72 }}>
+                  <div className="field-wrap orc-qty">
                     <input
                       className="input"
                       type="number"
@@ -379,7 +379,7 @@ export default function OSDetalhe() {
                       onChange={(e) => updateItem(idx, "qtd", Number(e.target.value))}
                     />
                   </div>
-                  <div className="field-wrap field-medium">
+                  <div className="field-wrap orc-price">
                     <input
                       className="input"
                       type="number"
@@ -390,11 +390,11 @@ export default function OSDetalhe() {
                       onChange={(e) => updateItem(idx, "precoUnit", Number(e.target.value))}
                     />
                   </div>
-                  <span style={{ minWidth: 90, fontWeight: 700, alignSelf: "center" }}>
+                  <span className="orc-subtotal">
                     R$ {(item.qtd * item.precoUnit).toFixed(2)}
                   </span>
                   {orcItens.length > 1 && (
-                    <button className="btn btnRed" type="button" onClick={() => removeItem(idx)} style={{ padding: "4px 10px" }}>✕</button>
+                    <button className="btn btnRed" type="button" onClick={() => removeItem(idx)} style={{ padding: "4px 10px", flexShrink: 0 }}>✕</button>
                   )}
                 </div>
               ))}

@@ -463,7 +463,7 @@ export default function Landing() {
     <div style={S.page}>
 
       {/* ── NAVBAR ── */}
-      <nav style={S.nav}>
+      <nav className="landing-nav" style={S.nav}>
         <div style={S.navLogo}>
           <img src="/carbuapplogo.png" alt="CarbuApp" style={S.navLogoImg} />
           <span style={S.navLogoText}>
@@ -541,7 +541,7 @@ export default function Landing() {
           <p style={S.sectionSub}>A maioria das oficinas de pequeno porte ainda opera de forma manual. O resultado: perda de informações, erros e falta de profissionalismo.</p>
         </div>
 
-        <div style={S.twoCol}>
+        <div className="landing-two-col">
           <div style={S.problemCard}>
             <div style={{ ...S.cardTitle, color: "#f87171" }}>
               <span>⚠️</span> O Problema
@@ -588,7 +588,7 @@ export default function Landing() {
           <p style={S.sectionSub}>Tudo que uma oficina precisa para funcionar de forma organizada e profissional.</p>
         </div>
 
-        <div style={S.featuresGrid}>
+        <div className="landing-features-grid">
           {features.map((f) => (
             <div key={f.num} style={S.featureCard}
               onMouseEnter={e => {
@@ -620,7 +620,7 @@ export default function Landing() {
           <h2 style={S.sectionTitle}>Feito para quem trabalha na ponta</h2>
         </div>
 
-        <div style={S.personasGrid}>
+        <div className="landing-personas-grid">
           {[
             { emoji: "🔧", title: "Mecânicos experientes", desc: "Que ainda trabalham apenas com papel e querem modernizar a oficina sem complicação." },
             { emoji: "🚀", title: "Mecânicos iniciantes", desc: "Que estão montando a oficina e precisam de um sistema simples e acessível desde o começo." },
@@ -659,7 +659,7 @@ export default function Landing() {
           <h2 style={S.sectionTitle}>Tudo que você ganha ao usar o CarbuApp</h2>
         </div>
 
-        <div style={S.benefitsGrid}>
+        <div className="landing-benefits-grid">
           {benefits.map(b => (
             <div key={b.title} style={S.benefitRow}>
               <div style={S.benefitIcon}>{b.icon}</div>
@@ -690,7 +690,7 @@ export default function Landing() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={S.footer}>
+      <footer className="landing-footer" style={S.footer}>
         <div style={S.footerText}>
           © {new Date().getFullYear()} <span style={S.footerOrange}>CarbuApp</span> — Sistema para Oficinas Automotivas
         </div>

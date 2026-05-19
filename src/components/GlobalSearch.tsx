@@ -251,6 +251,8 @@ export default function GlobalSearch() {
         }}
         onKeyDown={handleKeyDown}
         aria-label="Busca global"
+        inputMode="search"
+        enterKeyHint="search"
       />
 
       {open && query.trim().length >= 2 && (
