@@ -66,7 +66,7 @@ export default function Superadmin() {
 
   function handleEntrar(o: Oficina) {
     enterOficina({ id: o.id, nome: o.nome, responsavel: o.responsavel, logoUrl: o.logoUrl });
-    navigate("/");
+    navigate("/app");
   }
 
   return (
