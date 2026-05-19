@@ -9,6 +9,9 @@ import { SkeletonCard } from "../components/Skeleton";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
+type TemplateItem = { descricao: string; qtd: number; precoUnit: number };
+type Template = { id: number; nome: string; itens: TemplateItem[] };
+
 type OrcamentoItem = { id: number; descricao: string; qtd: number; precoUnit: number; valorLinha: number };
 
 type Orcamento = {
@@ -93,6 +96,12 @@ export default function OSDetalhe() {
   const [showOrcForm, setShowOrcForm] = useState(false);
   const [orcItens, setOrcItens] = useState([{ descricao: "", qtd: 1, precoUnit: 0 }]);
   const [savingOrc, setSavingOrc] = useState(false);
+
+  // ─── Templates ──────────────────────────────────────────────────────────────
+  const { data: templates = [] } = useQuery<Template[]>({
+    queryKey: ["templates"],
+    queryFn: () => api.get<Template[]>("/templates").then((r) => r.data),
+  });
 
   // ─── Status change ──────────────────────────────────────────────────────────
   const [changingStatus, setChangingStatus] = useState(false);
@@ -327,7 +336,28 @@ export default function OSDetalhe() {
           {/* Formulário de novo orçamento */}
           {showOrcForm && (
             <form onSubmit={handleCriarOrcamento} style={{ marginBottom: 20, background: "var(--surface2)", borderRadius: 10, padding: 16 }}>
-              <div style={{ fontWeight: 700, marginBottom: 10 }}>Novo Orçamento</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+                <div style={{ fontWeight: 700 }}>Novo Orçamento</div>
+                {templates.length > 0 && (
+                  <select
+                    className="select"
+                    style={{ maxWidth: 240, fontSize: 13 }}
+                    defaultValue=""
+                    onChange={(e) => {
+                      const tpl = templates.find((t) => t.id === Number(e.target.value));
+                      if (tpl) {
+                        setOrcItens(tpl.itens.map((it) => ({ descricao: it.descricao, qtd: it.qtd, precoUnit: it.precoUnit })));
+                        e.target.value = "";
+                      }
+                    }}
+                  >
+                    <option value="" disabled>Usar template...</option>
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>{t.nome}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
               {orcItens.map((item, idx) => (
                 <div key={idx} className="inline-form" style={{ marginBottom: 8 }}>
                   <div className="field-wrap field-wide">
