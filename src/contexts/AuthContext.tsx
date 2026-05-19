@@ -33,7 +33,7 @@ type AuthContextType = {
   isAdmin: boolean;
   // Oficina efetiva (selectedOficina quando superadmin, oficina quando admin/mecânico)
   oficinaAtiva: Oficina | null;
-  login: (email: string, senha: string, oficinaId?: number) => Promise<void>;
+  login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
   enterOficina: (oficina: Oficina) => void;
   exitOficina: () => void;
@@ -64,12 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  async function login(email: string, senha: string, oficinaId?: number) {
-    const { data } = await api.post<LoginResponse>("/auth/login", {
-      email,
-      senha,
-      ...(oficinaId !== undefined && { oficinaId }),
-    });
+  async function login(email: string, senha: string) {
+    const { data } = await api.post<LoginResponse>("/auth/login", { email, senha });
 
     localStorage.setItem("@carbuapp:token", data.token);
     localStorage.setItem("@carbuapp:user", JSON.stringify(data.user));
